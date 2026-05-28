@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Play, Pause, Trash2, Clock, Calendar } from 'lucide-react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { mockScheduledTasks } from '@/lib/mock-data';
 import { ProjectType } from '@/lib/types';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -24,9 +23,21 @@ interface NewTask {
   prompt: string;
 }
 
+interface Task {
+  id: string;
+  name: string;
+  cron: string;
+  module: ProjectType;
+  prompt: string;
+  active: boolean;
+  lastRun: string | null;
+  nextRun: string | null;
+}
+
 export default function ScheduledTasksPage() {
   const { sidebarOpen, rightPanelOpen } = useUIStore();
-  const [tasks, setTasks] = useState(mockScheduledTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState<NewTask>({
     name: '',
@@ -35,17 +46,33 @@ export default function ScheduledTasksPage() {
     prompt: '',
   });
 
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const res = await fetch('/api/tasks');
+        const data = await res.json();
+        if (data.tasks) {
+          setTasks(data.tasks);
+        }
+      } catch (e) {
+        console.error('Failed to fetch tasks:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchTasks();
+  }, []);
+
   const handleCreateTask = () => {
     if (!newTask.name || !newTask.cron || !newTask.prompt) return;
 
-    const task = {
+    const task: Task = {
       id: Date.now().toString(),
-      userId: '1',
       ...newTask,
       active: true,
       lastRun: null,
-      nextRun: new Date(),
-      createdAt: new Date(),
+      nextRun: new Date().toISOString(),
     };
 
     setTasks([...tasks, task]);
@@ -85,60 +112,64 @@ export default function ScheduledTasksPage() {
               </Button>
             </div>
 
-            <div className="grid gap-4">
-              {tasks.map((task) => (
-                <Card key={task.id} className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900">{task.name}</h3>
-                        <Badge variant={task.active ? 'default' : 'secondary'}>
-                          {task.active ? 'Aktif' : 'Pasif'}
-                        </Badge>
-                      </div>
-                      
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>Cron: {task.cron}</span>
+            {loading ? (
+              <p className="text-gray-500">Loading...</p>
+            ) : (
+              <div className="grid gap-4">
+                {tasks.map((task) => (
+                  <Card key={task.id} className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="text-lg font-semibold text-gray-900">{task.name}</h3>
+                          <Badge variant={task.active ? 'default' : 'secondary'}>
+                            {task.active ? 'Aktif' : 'Pasif'}
+                          </Badge>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          <span>Modül: {task.module}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>Prompt: {task.prompt}</span>
-                        </div>
-                        {task.nextRun && (
+                        
+                        <div className="space-y-2 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
-                            <span>Sonraki çalışma: {task.nextRun.toLocaleString('tr-TR')}</span>
+                            <span>Cron: {task.cron}</span>
                           </div>
-                        )}
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>Modül: {task.module}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            <span>Prompt: {task.prompt}</span>
+                          </div>
+                          {task.nextRun && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4" />
+                              <span>Sonraki çalışma: {new Date(task.nextRun).toLocaleString('tr-TR')}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => toggleTaskActive(task.id)}
+                        >
+                          {task.active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => deleteTask(task.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => toggleTaskActive(task.id)}
-                      >
-                        {task.active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => deleteTask(task.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </main>
         <RightPanel />

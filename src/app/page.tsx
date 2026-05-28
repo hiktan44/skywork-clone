@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { mockProjects } from '@/lib/mock-data';
+import { Project } from '@/lib/types';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -14,9 +14,27 @@ import AnnouncementModal from '@/components/modals/AnnouncementModal';
 
 export default function Home() {
   const { sidebarOpen, rightPanelOpen, setTrendingProjects, setAnnouncementModalOpen } = useUIStore();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTrendingProjects(mockProjects);
+    async function fetchProjects() {
+      try {
+        const res = await fetch('/api/projects');
+        const data = await res.json();
+        if (data.projects) {
+          setProjects(data.projects);
+          setTrendingProjects(data.projects);
+        }
+      } catch (e) {
+        console.error('Failed to fetch projects:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchProjects();
+    
     setTimeout(() => {
       setAnnouncementModalOpen(true);
     }, 1000);
@@ -43,7 +61,11 @@ export default function Home() {
 
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Trending Projects</h2>
-              <ProjectGrid projects={mockProjects} />
+              {loading ? (
+                <p className="text-gray-500">Loading...</p>
+              ) : (
+                <ProjectGrid projects={projects} />
+              )}
             </div>
           </div>
         </main>

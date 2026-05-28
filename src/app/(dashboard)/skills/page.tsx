@@ -1,9 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Sparkles, Tag } from 'lucide-react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { mockSkills } from '@/lib/mock-data';
 import { ProjectType } from '@/lib/types';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -23,6 +23,26 @@ const moduleColors: Record<ProjectType, string> = {
 
 export default function SkillsPage() {
   const { sidebarOpen, rightPanelOpen } = useUIStore();
+  const [skills, setSkills] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSkills() {
+      try {
+        const res = await fetch('/api/skills');
+        const data = await res.json();
+        if (data.skills) {
+          setSkills(data.skills);
+        }
+      } catch (e) {
+        console.error('Failed to fetch skills:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchSkills();
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -40,42 +60,46 @@ export default function SkillsPage() {
               <p className="text-gray-600">Hazır AI iş akışı şablonlarını keşfedin ve kullanın</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockSkills.map((skill) => (
-                <Card key={skill.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg ${moduleColors[skill.module]} flex items-center justify-center text-white`}>
-                        <Sparkles className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{skill.name}</h3>
-                        <Badge variant="outline" className="text-xs mt-1">
-                          {skill.module}
-                        </Badge>
+            {loading ? (
+              <p className="text-gray-500">Loading...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {skills.map((skill) => (
+                  <Card key={skill.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg ${moduleColors[skill.module] || 'bg-gray-500'} flex items-center justify-center text-white`}>
+                          <Sparkles className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{skill.name}</h3>
+                          <Badge variant="outline" className="text-xs mt-1">
+                            {skill.module}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <p className="text-gray-600 text-sm mb-4">{skill.description}</p>
+                    <p className="text-gray-600 text-sm mb-4">{skill.description}</p>
 
-                  <div className="flex items-start gap-2 mb-4">
-                    <Tag className="h-4 w-4 text-gray-400 mt-0.5" />
-                    <div className="flex flex-wrap gap-2">
-                      {skill.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+                    <div className="flex items-start gap-2 mb-4">
+                      <Tag className="h-4 w-4 text-gray-400 mt-0.5" />
+                      <div className="flex flex-wrap gap-2">
+                        {(skill.tags || []).map((tag: string) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  <Button className="w-full">
-                    Şablonu Kullan
-                  </Button>
-                </Card>
-              ))}
-            </div>
+                    <Button className="w-full">
+                      Şablonu Kullan
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </main>
         <RightPanel />
