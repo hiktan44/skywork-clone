@@ -17,9 +17,9 @@ async function rawQuery(sql: string, params?: any[]) {
 export async function GET() {
   try {
     const tasksResult = await rawQuery(`
-      SELECT id, name, cron, module, prompt, active, "lastRun", "nextRun"
+      SELECT id, name, cron, module, prompt, active, lastrun, nextrun
       FROM "ScheduledTask"
-      ORDER BY "createdAt" DESC
+      ORDER BY createdat DESC
     `)
 
     return NextResponse.json({
@@ -30,8 +30,8 @@ export async function GET() {
         module: row.module,
         prompt: row.prompt,
         active: row.active,
-        lastRun: row.lastRun,
-        nextRun: row.nextRun,
+        lastRun: row.lastrun,
+        nextRun: row.nextrun,
       }))
     })
   } catch (e: any) {
