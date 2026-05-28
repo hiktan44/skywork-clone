@@ -68,7 +68,7 @@ export default function SkillsPage() {
                   <Card key={skill.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg ${moduleColors[skill.module] || 'bg-gray-500'} flex items-center justify-center text-white`}>
+                        <div className={`w-10 h-10 rounded-lg ${(moduleColors[skill.module as ProjectType] || 'bg-gray-500')} flex items-center justify-center text-white`}>
                           <Sparkles className="h-5 w-5" />
                         </div>
                         <div>
