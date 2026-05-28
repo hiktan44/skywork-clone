@@ -17,10 +17,10 @@ async function rawQuery(sql: string, params?: any[]) {
 export async function GET() {
   try {
     const skillsResult = await rawQuery(`
-      SELECT id, name, description, module, systemprompt, defaultparams, tags, isactive, sortorder
+      SELECT id, name, description, module, "systemPrompt", "defaultParams", tags, "isActive", "sortOrder"
       FROM "Skill"
-      WHERE isactive = true
-      ORDER BY sortorder, name
+      WHERE "isActive" = true
+      ORDER BY "sortOrder", "name"
     `)
 
     return NextResponse.json({
@@ -29,11 +29,11 @@ export async function GET() {
         name: row.name,
         description: row.description,
         module: row.module,
-        systemPrompt: row.systemprompt,
-        defaultParams: row.defaultparams,
+        systemPrompt: row.systemPrompt,
+        defaultParams: row.defaultParams,
         tags: row.tags,
-        isActive: row.isactive,
-        sortOrder: row.sortorder,
+        isActive: row.isActive,
+        sortOrder: row.sortOrder,
       }))
     })
   } catch (e: any) {

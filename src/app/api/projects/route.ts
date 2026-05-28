@@ -17,10 +17,10 @@ async function rawQuery(sql: string, params?: any[]) {
 export async function GET() {
   try {
     const projectsResult = await rawQuery(`
-      SELECT id, title, type, outputurl, thumbnailurl, ispublic, prompt, createdat
+      SELECT id, title, type, "outputUrl", "thumbnailUrl", "isPublic", prompt, "createdAt"
       FROM "Project"
-      WHERE ispublic = true
-      ORDER BY createdat DESC
+      WHERE "isPublic" = true
+      ORDER BY "createdAt" DESC
       LIMIT 50
     `)
 
@@ -29,11 +29,11 @@ export async function GET() {
         id: row.id,
         title: row.title,
         type: row.type,
-        outputUrl: row.outputurl,
-        thumbnailUrl: row.thumbnailurl,
-        isPublic: row.ispublic,
+        outputUrl: row.outputUrl,
+        thumbnailUrl: row.thumbnailUrl,
+        isPublic: row.isPublic,
         prompt: row.prompt,
-        createdAt: row.createdat,
+        createdAt: row.createdAt,
       }))
     })
   } catch (e: any) {
