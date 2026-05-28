@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skywork-clone
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://skywork:skywork123@db:5432/skywork?schema=public
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-changeme-super-secret-key}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - NODE_ENV=production
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - skywork-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: skywork-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=skywork
+      - POSTGRES_PASSWORD=skywork123
+      - POSTGRES_DB=skywork
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skywork -d skywork"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skywork-network
+
+volumes:
+  postgres_data:
+
+networks:
+  skywork-network:
+    driver: bridge

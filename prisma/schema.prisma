@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum ProjectType {
+  SLIDES
+  DOCUMENT
+  IMAGE
+  SHEET
+  WEBSITE
+  VIDEO
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  plan      Plan     @default(FREE)
+  projects  Project[]
+  tasks     ScheduledTask[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title        String
+  type         ProjectType
+  outputUrl    String?
+  thumbnailUrl String?
+  isPublic     Boolean     @default(false)
+  prompt       String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([isPublic])
+}
+
+model ScheduledTask {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  cron      String
+  module    ProjectType
+  prompt    String
+  active    Boolean     @default(true)
+  lastRun   DateTime?
+  nextRun   DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([active])
+}
+
+model Skill {
+  id           String      @id @default(cuid())
+  name         String
+  description  String
+  module       ProjectType
+  systemPrompt String?
+  defaultParams Json?
+  tags         String[]
+  isActive     Boolean     @default(true)
+  sortOrder    Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([module])
+  @@index([isActive])
+}
