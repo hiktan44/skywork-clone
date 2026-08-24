@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { useUIStore } from '@/lib/store';
+import { useT } from '@/lib/i18n';
 
 const socialProviders = [
   { id: 'google', name: 'Google', icon: '🔴', color: 'bg-white border-gray-300' },
@@ -16,6 +17,7 @@ const socialProviders = [
 
 export default function AuthModal() {
   const { authModalOpen, setAuthModalOpen } = useUIStore();
+  const t = useT();
 
   return (
     <Dialog open={authModalOpen} onOpenChange={setAuthModalOpen}>
@@ -31,9 +33,9 @@ export default function AuthModal() {
 
         <div className="space-y-6 p-6">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-semibold">Sign in / Sign up</h2>
+            <h2 className="text-2xl font-semibold">{t('auth.signIn')}</h2>
             <p className="text-sm text-gray-600">
-              Hesabınıza erişin veya yeni hesap oluşturun
+              {t('auth.signInDesc')}
             </p>
           </div>
 
@@ -45,13 +47,13 @@ export default function AuthModal() {
                 className={`w-full justify-start gap-3 h-12 ${provider.color}`}
               >
                 <span className="text-lg">{provider.icon}</span>
-                <span>{provider.name} ile devam et</span>
+                <span>{t('auth.continueWith')} {provider.name}</span>
               </Button>
             ))}
           </div>
 
           <div className="text-center text-xs text-gray-500">
-            <p>Devam ederek kullanım şartlarımızı kabul etmiş olursunuz</p>
+            <p>{t('auth.terms')}</p>
           </div>
         </div>
       </DialogContent>

@@ -3,6 +3,7 @@
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { mockProjects } from '@/lib/mock-data';
+import { useT } from '@/lib/i18n';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -10,6 +11,7 @@ import ProjectGrid from '@/components/dashboard/ProjectGrid';
 
 export default function ShowcasePage() {
   const { sidebarOpen, rightPanelOpen } = useUIStore();
+  const t = useT();
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -23,12 +25,12 @@ export default function ShowcasePage() {
         )}>
           <div className="max-w-6xl mx-auto p-6 space-y-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Showcase</h1>
-              <p className="text-gray-600">Topluluk tarafından oluşturulan en iyi projeler</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('showcase.title')}</h1>
+              <p className="text-gray-600">{t('showcase.description')}</p>
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-900">Trending Projects</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t('dashboard.trending')}</h2>
               <ProjectGrid projects={mockProjects} />
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Plus, Play, Pause, Trash2, Clock, Calendar } from 'lucide-react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { ProjectType } from '@/lib/types';
+import { useT } from '@/lib/i18n';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -45,6 +46,7 @@ export default function ScheduledTasksPage() {
     module: ProjectType.DOCUMENT,
     prompt: '',
   });
+  const t = useT();
 
   useEffect(() => {
     async function fetchTasks() {
@@ -60,7 +62,7 @@ export default function ScheduledTasksPage() {
         setLoading(false);
       }
     }
-    
+
     fetchTasks();
   }, []);
 
@@ -81,7 +83,7 @@ export default function ScheduledTasksPage() {
   };
 
   const toggleTaskActive = (id: string) => {
-    setTasks(tasks.map(task => 
+    setTasks(tasks.map(task =>
       task.id === id ? { ...task, active: !task.active } : task
     ));
   };
@@ -103,17 +105,17 @@ export default function ScheduledTasksPage() {
           <div className="max-w-6xl mx-auto p-6 space-y-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Zamanlanmış Görevler</h1>
-                <p className="text-gray-600">AI ile otomatik iş akışları planlayın</p>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('tasks.title')}</h1>
+                <p className="text-gray-600">{t('tasks.description')}</p>
               </div>
               <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Yeni Görev
+                {t('tasks.new')}
               </Button>
             </div>
 
             {loading ? (
-              <p className="text-gray-500">Loading...</p>
+              <p className="text-gray-500">{t('dashboard.loading')}</p>
             ) : (
               <div className="grid gap-4">
                 {tasks.map((task) => (
@@ -123,27 +125,27 @@ export default function ScheduledTasksPage() {
                         <div className="flex items-center gap-3 mb-3">
                           <h3 className="text-lg font-semibold text-gray-900">{task.name}</h3>
                           <Badge variant={task.active ? 'default' : 'secondary'}>
-                            {task.active ? 'Aktif' : 'Pasif'}
+                            {task.active ? t('tasks.active') : t('tasks.passive')}
                           </Badge>
                         </div>
-                        
+
                         <div className="space-y-2 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
-                            <span>Cron: {task.cron}</span>
+                            <span>{t('tasks.cron')}: {task.cron}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>Modül: {task.module}</span>
+                            <span>{t('tasks.module')}: {task.module}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
-                            <span>Prompt: {task.prompt}</span>
+                            <span>{t('tasks.prompt')}: {task.prompt}</span>
                           </div>
                           {task.nextRun && (
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4" />
-                              <span>Sonraki çalışma: {new Date(task.nextRun).toLocaleString('tr-TR')}</span>
+                              <span>{t('tasks.nextRun')}: {new Date(task.nextRun).toLocaleString('tr-TR')}</span>
                             </div>
                           )}
                         </div>
@@ -178,56 +180,56 @@ export default function ScheduledTasksPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Yeni Zamanlanmış Görev</DialogTitle>
+            <DialogTitle>{t('tasks.newTaskTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Görev Adı</Label>
+              <Label htmlFor="name">{t('tasks.taskName')}</Label>
               <Input
                 id="name"
                 value={newTask.name}
                 onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-                placeholder="Örn: Pazartesi Pazar Raporu"
+                placeholder={t('tasks.placeholderName')}
               />
             </div>
             <div>
-              <Label htmlFor="cron">Cron İfadesi</Label>
+              <Label htmlFor="cron">{t('tasks.cronExpression')}</Label>
               <Input
                 id="cron"
                 value={newTask.cron}
                 onChange={(e) => setNewTask({ ...newTask, cron: e.target.value })}
-                placeholder="Örn: 0 9 * * 1 (Her Pazartesi 09:00)"
+                placeholder={t('tasks.placeholderCron')}
               />
             </div>
             <div>
-              <Label htmlFor="module">Modül</Label>
+              <Label htmlFor="module">{t('tasks.module')}</Label>
               <Select value={newTask.module} onValueChange={(value) => setNewTask({ ...newTask, module: value as ProjectType })}>
                 <SelectTrigger id="module">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ProjectType.SLIDES}>Slides</SelectItem>
-                  <SelectItem value={ProjectType.DOCUMENT}>Documents</SelectItem>
-                  <SelectItem value={ProjectType.IMAGE}>Images</SelectItem>
-                  <SelectItem value={ProjectType.SHEET}>Sheets</SelectItem>
-                  <SelectItem value={ProjectType.WEBSITE}>Websites</SelectItem>
-                  <SelectItem value={ProjectType.VIDEO}>Videos</SelectItem>
+                  <SelectItem value={ProjectType.SLIDES}>{t('quickActions.slides')}</SelectItem>
+                  <SelectItem value={ProjectType.DOCUMENT}>{t('quickActions.documents')}</SelectItem>
+                  <SelectItem value={ProjectType.IMAGE}>{t('quickActions.images')}</SelectItem>
+                  <SelectItem value={ProjectType.SHEET}>{t('quickActions.sheets')}</SelectItem>
+                  <SelectItem value={ProjectType.WEBSITE}>{t('quickActions.websites')}</SelectItem>
+                  <SelectItem value={ProjectType.VIDEO}>{t('quickActions.videos')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label htmlFor="prompt">Prompt</Label>
+              <Label htmlFor="prompt">{t('tasks.prompt')}</Label>
               <Input
                 id="prompt"
                 value={newTask.prompt}
                 onChange={(e) => setNewTask({ ...newTask, prompt: e.target.value })}
-                placeholder="Görev açıklaması"
+                placeholder={t('tasks.taskDescription')}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>İptal</Button>
-            <Button onClick={handleCreateTask}>Oluştur</Button>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t('tasks.cancel')}</Button>
+            <Button onClick={handleCreateTask}>{t('tasks.create')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Project } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Presentation, FileText, Image, Table, Globe, Video, Folder } from 'lucide-react';
+import { useT } from '@/lib/i18n';
 
 interface ProjectGridProps {
   projects: Project[];
@@ -30,6 +31,8 @@ const moduleGradients: Record<string, string> = {
 const heights = [100, 140, 120, 180, 110, 160, 130, 150];
 
 export default function ProjectGrid({ projects }: ProjectGridProps) {
+  const t = useT();
+
   const getModuleColor = (type: string) => {
     switch (type) {
       case 'SLIDES': return 'bg-red-500';
@@ -45,7 +48,7 @@ export default function ProjectGrid({ projects }: ProjectGridProps) {
   if (projects.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
-        <p className="text-sm">Henüz proje yok</p>
+        <p className="text-sm">{t('dashboard.noProjects')}</p>
       </div>
     );
   }
@@ -65,7 +68,7 @@ export default function ProjectGrid({ projects }: ProjectGridProps) {
           >
             <div className="relative h-full">
               <div className={`w-full h-full bg-gradient-to-br ${gradient}`} />
-              
+
               <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
                 <h3 className="text-xs font-semibold text-white truncate">
                   {project.title}

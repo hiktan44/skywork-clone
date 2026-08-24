@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { Project } from '@/lib/types';
+import { useT } from '@/lib/i18n';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -16,6 +17,7 @@ export default function Home() {
   const { sidebarOpen, rightPanelOpen, setTrendingProjects, setAnnouncementModalOpen } = useUIStore();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useT();
 
   useEffect(() => {
     async function fetchProjects() {
@@ -32,9 +34,9 @@ export default function Home() {
         setLoading(false);
       }
     }
-    
+
     fetchProjects();
-    
+
     setTimeout(() => {
       setAnnouncementModalOpen(true);
     }, 1000);
@@ -54,15 +56,15 @@ export default function Home() {
             <div className="space-y-4">
               <ChatInput />
             </div>
-            
+
             <div className="space-y-4">
               <QuickActionTabs />
             </div>
 
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-900">Trending Projects</h2>
+              <h2 className="text-xl font-semibold text-gray-900">{t('dashboard.trending')}</h2>
               {loading ? (
-                <p className="text-gray-500">Loading...</p>
+                <p className="text-gray-500">{t('dashboard.loading')}</p>
               ) : (
                 <ProjectGrid projects={projects} />
               )}

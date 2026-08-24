@@ -5,6 +5,7 @@ import { Sparkles, Tag } from 'lucide-react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { ProjectType } from '@/lib/types';
+import { useT } from '@/lib/i18n';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -25,6 +26,7 @@ export default function SkillsPage() {
   const { sidebarOpen, rightPanelOpen } = useUIStore();
   const [skills, setSkills] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useT();
 
   useEffect(() => {
     async function fetchSkills() {
@@ -40,7 +42,7 @@ export default function SkillsPage() {
         setLoading(false);
       }
     }
-    
+
     fetchSkills();
   }, []);
 
@@ -56,12 +58,12 @@ export default function SkillsPage() {
         )}>
           <div className="max-w-6xl mx-auto p-6 space-y-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Explore Skills</h1>
-              <p className="text-gray-600">Hazır AI iş akışı şablonlarını keşfedin ve kullanın</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('skills.title')}</h1>
+              <p className="text-gray-600">{t('skills.description')}</p>
             </div>
 
             {loading ? (
-              <p className="text-gray-500">Loading...</p>
+              <p className="text-gray-500">{t('dashboard.loading')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {skills.map((skill) => (
@@ -94,7 +96,7 @@ export default function SkillsPage() {
                     </div>
 
                     <Button className="w-full">
-                      Şablonu Kullan
+                      {t('skills.useTemplate')}
                     </Button>
                   </Card>
                 ))}

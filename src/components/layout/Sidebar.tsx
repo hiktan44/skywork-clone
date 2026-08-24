@@ -5,22 +5,24 @@ import { usePathname } from 'next/navigation';
 import { Home, Plus, Sparkles, Folder, Clock, Eye, MessageSquare, Search, HelpCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
+import { useT } from '@/lib/i18n';
 
 const sidebarItems = [
-  { id: 'home', label: 'Home', icon: Home, href: '/' },
-  { id: 'new', label: 'New Projects', icon: Plus, href: '/?action=new' },
-  { id: 'skills', label: 'Explore Skills', icon: Sparkles, href: '/skills' },
-  { id: 'projects', label: 'Projects', icon: Folder, href: '/' },
-  { id: 'scheduled', label: 'Scheduled Tasks', icon: Clock, href: '/scheduled', badge: 'New' },
-  { id: 'showcase', label: 'Showcase', icon: Eye, href: '/showcase' },
-  { id: 'im', label: 'Connect IM channel', icon: MessageSquare, href: '#', external: true },
-  { id: 'search', label: 'Search', icon: Search, href: '#' },
-  { id: 'help', label: 'Help', icon: HelpCircle, href: '#' },
+  { id: 'home', label: 'nav.home', icon: Home, href: '/' },
+  { id: 'new', label: 'nav.new', icon: Plus, href: '/?action=new' },
+  { id: 'skills', label: 'nav.skills', icon: Sparkles, href: '/skills' },
+  { id: 'projects', label: 'nav.projects', icon: Folder, href: '/' },
+  { id: 'scheduled', label: 'nav.scheduled', icon: Clock, href: '/scheduled', badge: 'common.new' },
+  { id: 'showcase', label: 'nav.showcase', icon: Eye, href: '/showcase' },
+  { id: 'im', label: 'nav.connect', icon: MessageSquare, href: '#', external: true },
+  { id: 'search', label: 'nav.search', icon: Search, href: '#' },
+  { id: 'help', label: 'nav.help', icon: HelpCircle, href: '#' },
 ];
 
 export default function Sidebar() {
   const { sidebarOpen } = useUIStore();
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <aside
@@ -46,10 +48,10 @@ export default function Sidebar() {
               <Icon className="h-5 w-5 shrink-0" />
               {sidebarOpen && (
                 <>
-                  <span className="truncate flex-1">{item.label}</span>
+                  <span className="truncate flex-1">{t(item.label)}</span>
                   {item.badge && (
                     <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                      {item.badge}
+                      {t(item.badge)}
                     </span>
                   )}
                   {item.external && <ChevronRight className="h-4 w-4 text-gray-400" />}
