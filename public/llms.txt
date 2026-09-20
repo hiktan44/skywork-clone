@@ -1,0 +1,9 @@
+# Skywork
+
+> Projeleri, görevleri ve içerik üretimini tek çalışma alanında yöneten yapay zekâ destekli platform.
+
+- Resmî site: https://skywork.seymata.com/
+- Gizlilik ve KVKK: https://skywork.seymata.com/privacy
+- Kullanım koşulları: https://skywork.seymata.com/terms
+- Çerez politikası: https://skywork.seymata.com/cookies
+- İletişim: https://skywork.seymata.com/contact
