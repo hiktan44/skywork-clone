@@ -1,23 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { X, LogOut } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
 import { useT } from '@/lib/i18n';
 
-const socialProviders = [
-  { id: 'google', name: 'Google', icon: '🔴' },
-  { id: 'microsoft', name: 'Microsoft', icon: '🔵' },
-  { id: 'facebook', name: 'Facebook', icon: '👤' },
-  { id: 'github', name: 'GitHub', icon: '🐙' },
-  { id: 'apple', name: 'Apple', icon: '🍎' },
-  { id: 'email', name: 'Email', icon: '📧' },
-];
-
 export default function RightPanel() {
-  const { rightPanelOpen, setRightPanelOpen, selectedProject } = useUIStore();
+  const { rightPanelOpen, setRightPanelOpen, setAuthModalOpen } = useUIStore();
   const t = useT();
 
   return (
@@ -41,16 +31,10 @@ export default function RightPanel() {
         </div>
 
         <div className="space-y-3">
-          {socialProviders.map((provider) => (
-            <Button
-              key={provider.id}
-              variant="outline"
-              className="w-full justify-start gap-3 h-12"
-            >
-              <span className="text-lg">{provider.icon}</span>
-              <span>{t('auth.continueWith')} {provider.name}</span>
-            </Button>
-          ))}
+          <p className="text-sm text-gray-600">Görevlerinizi görmek için Google hesabınızla giriş yapın.</p>
+          <Button className="w-full" onClick={() => { setRightPanelOpen(false); setAuthModalOpen(true); }}>
+            Giriş / Hesap
+          </Button>
         </div>
 
         <div className="mt-auto pt-6 border-t">

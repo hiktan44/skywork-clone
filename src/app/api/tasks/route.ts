@@ -1,40 +1,31 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { QueryResultRow } from 'pg';
+import { auth } from '@/auth';
+import { currentTaskOwner, taskQuery } from '@/lib/task-store';
 
-const DATABASE_URL = process.env.DATABASE_URL
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-async function rawQuery(sql: string, params?: any[]) {
-  const { Client } = await import('pg')
-  const client = new Client(DATABASE_URL)
-  await client.connect()
-  try {
-    const result = await client.query(sql, params)
-    return result
-  } finally {
-    await client.end()
-  }
+const headers = { 'Cache-Control': 'no-store' };
+interface TaskRow extends QueryResultRow {
+  id: string; name: string; cron: string; module: string; prompt: string;
+  active: boolean; lastRun: Date | null; nextRun: Date | null;
 }
 
 export async function GET() {
   try {
-    const tasksResult = await rawQuery(`
+    const identity = (await auth())?.user;
+    if (!identity?.id || !identity.email) {
+      return NextResponse.json({ error: 'Görevlerinizi görmek için giriş yapın.' }, { status: 401, headers });
+    }
+    const owner = await currentTaskOwner(identity.id, identity.email);
+    if (!owner) return NextResponse.json({ error: 'Oturumunuz geçersiz; tekrar giriş yapın.' }, { status: 401, headers });
+    const tasks = await taskQuery<TaskRow>(`
       SELECT id, name, cron, module, prompt, active, "lastRun", "nextRun"
-      FROM "ScheduledTask"
-      ORDER BY "createdAt" DESC
-    `)
-
-    return NextResponse.json({
-      tasks: tasksResult.rows.map((row: any) => ({
-        id: row.id,
-        name: row.name,
-        cron: row.cron,
-        module: row.module,
-        prompt: row.prompt,
-        active: row.active,
-        lastRun: row.lastRun,
-        nextRun: row.nextRun,
-      }))
-    })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+      FROM "ScheduledTask" WHERE "userId"=$1 ORDER BY "createdAt" DESC
+    `, [owner.id]);
+    return NextResponse.json({ tasks: tasks.rows }, { headers });
+  } catch {
+    return NextResponse.json({ error: 'Görevler şu anda yüklenemiyor. Lütfen yeniden deneyin.' }, { status: 503, headers });
   }
 }

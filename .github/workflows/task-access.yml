@@ -1,0 +1,45 @@
+name: Görev sahipliği ve gerçek oturum
+on:
+  pull_request:
+  push:
+    branches: [main, 'codex/f53-*']
+permissions:
+  contents: read
+jobs:
+  task-access:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fixture
+          POSTGRES_PASSWORD: fixture
+          POSTGRES_DB: codex_skywork_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      TEST_DATABASE_URL: postgresql://fixture:fixture@127.0.0.1:5432/codex_skywork_test
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Kilit dosyasından bağımlılıkları kur
+        run: npm ci --ignore-scripts
+      - name: Tam TypeScript kontrolü
+        run: npm exec -- tsc --noEmit --incremental false
+      - name: Değişen dosyaların kod kontrolü
+        run: npm exec -- eslint src/auth.ts src/lib/task-auth-config.ts src/lib/task-store.ts src/types/next-auth.d.ts src/app/api/tasks/route.ts 'src/app/api/auth/[...nextauth]/route.ts' src/components/modals/AuthModal.tsx src/components/layout/Navbar.tsx src/components/layout/RightPanel.tsx src/app/layout.tsx 'src/app/(dashboard)/scheduled/page.tsx'
+      - name: Gerçek Next/Auth.js HTTP ve PostgreSQL testleri
+        run: npm run test:tasks
+      - name: Veritabanı kurulum regresyonları
+        run: npm run test:database
+      - name: Üretim derlemesi
+        run: npm run build -- --webpack

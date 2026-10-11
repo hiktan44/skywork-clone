@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import AuthModal from '@/components/modals/AuthModal';
 import { LanguageProvider } from "@/components/LanguageProvider";
 
 const inter = Inter({
@@ -50,7 +51,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <LanguageProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>{children}<AuthModal /></TooltipProvider>
         </LanguageProvider>
       <LegalFooter />
       <script dangerouslySetInnerHTML={{ __html: "if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){window.addEventListener('load', function(){navigator.serviceWorker.register('/sw.js').catch(function(){});})}"}} />
