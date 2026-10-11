@@ -36,9 +36,11 @@ interface Task {
 }
 
 export default function ScheduledTasksPage() {
-  const { sidebarOpen, rightPanelOpen } = useUIStore();
+  const { sidebarOpen, rightPanelOpen, setAuthModalOpen } = useUIStore();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [loginRequired, setLoginRequired] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState<NewTask>({
     name: '',
@@ -53,11 +55,16 @@ export default function ScheduledTasksPage() {
       try {
         const res = await fetch('/api/tasks');
         const data = await res.json();
+        if (!res.ok) {
+          setLoginRequired(res.status === 401);
+          setError(res.status === 401 ? 'Görevlerinizi görmek için giriş yapın.' : 'Görevler şu anda yüklenemiyor. Lütfen yeniden deneyin.');
+          return;
+        }
         if (data.tasks) {
           setTasks(data.tasks);
         }
-      } catch (e) {
-        console.error('Failed to fetch tasks:', e);
+      } catch {
+        setError('Görevler yüklenemedi. Bağlantınızı kontrol edip yeniden deneyin.');
       } finally {
         setLoading(false);
       }
@@ -103,6 +110,10 @@ export default function ScheduledTasksPage() {
           rightPanelOpen ? 'mr-[360px]' : 'mr-0'
         )}>
           <div className="max-w-6xl mx-auto p-6 space-y-8">
+            {error && <div role="alert" className="rounded border border-red-200 p-4 text-red-800">
+              <p>{error}</p>
+              {loginRequired && <Button className="mt-3" onClick={() => setAuthModalOpen(true)}>Giriş yap</Button>}
+            </div>}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('tasks.title')}</h1>

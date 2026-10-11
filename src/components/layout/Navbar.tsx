@@ -7,7 +7,7 @@ import { useT } from '@/lib/i18n';
 import LangSwitch from '@/components/LangSwitch';
 
 export default function Navbar() {
-  const { toggleSidebar, setRightPanelOpen } = useUIStore();
+  const { toggleSidebar, setAuthModalOpen } = useUIStore();
   const t = useT();
 
   return (
@@ -53,11 +53,11 @@ export default function Navbar() {
           <LangSwitch />
 
           <Button
-            onClick={() => setRightPanelOpen(true)}
+            onClick={() => setAuthModalOpen(true)}
             className="h-9 bg-black text-white hover:bg-gray-800"
           >
             <LogIn className="mr-2 h-4 w-4" />
-            {t('auth.signIn')}
+            {'Giriş / Hesap'}
           </Button>
         </div>
       </div>
