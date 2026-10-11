@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:setup": "node scripts/setup-database.mjs",
+    "test:database": "node --experimental-vm-modules --test tests/database-setup.test.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -41,3 +43,4 @@
     "typescript": "^5"
   }
 }
+
