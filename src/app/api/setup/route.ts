@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const DATABASE_URL = process.env.DATABASE_URL
 
-async function rawQuery(sql: string, params?: any[]) {
+async function rawQuery(sql: string, params?: unknown[]) {
   const { Client } = await import('pg')
   const client = new Client(DATABASE_URL)
   await client.connect()
@@ -47,11 +47,12 @@ export async function GET() {
     await rawQuery(`ALTER TABLE "ScheduledTask" ADD CONSTRAINT "ScheduledTask_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;`)
     logs.push('✓ Indexes and foreign keys created')
 
-  } catch (e: any) {
-    if (e.message.includes('already exists')) {
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e)
+    if (message.includes('already exists')) {
       logs.push('Tables/indexes already exist, continuing...')
     } else {
-      logs.push(`Table creation note: ${e.message}`)
+      logs.push(`Table creation note: ${message}`)
     }
   }
 
@@ -177,8 +178,9 @@ export async function GET() {
 
     return NextResponse.json({ success: true, logs })
 
-  } catch (e: any) {
-    logs.push(`❌ Seed error: ${e.message}`)
-    return NextResponse.json({ success: false, logs, error: e.message }, { status: 500 })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e)
+    logs.push(`❌ Seed error: ${message}`)
+    return NextResponse.json({ success: false, logs, error: message }, { status: 500 })
   }
 }

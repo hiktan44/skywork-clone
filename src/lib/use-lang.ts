@@ -10,11 +10,6 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 type Language = 'tr' | 'en';
 
-interface IpResponse {
-  country?: string;
-  error?: string;
-}
-
 declare global {
   interface WindowEventMap {
     [CHANGE_EVENT]: CustomEvent<Language>;
@@ -51,7 +46,7 @@ async function detectCountryFromIp(): Promise<string | null> {
         return data.country_code;
       }
     }
-  } catch (e) {
+  } catch {
     console.debug('ipwho.is failed, trying fallback');
   }
 
@@ -72,7 +67,7 @@ async function detectCountryFromIp(): Promise<string | null> {
         return data.country;
       }
     }
-  } catch (e) {
+  } catch {
     console.debug('ipapi.co failed, using browser locale');
   }
 

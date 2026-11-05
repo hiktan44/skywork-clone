@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { Project } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Presentation, FileText, Image, Table, Globe, Video, Folder } from 'lucide-react';

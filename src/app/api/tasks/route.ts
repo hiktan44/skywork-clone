@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const DATABASE_URL = process.env.DATABASE_URL
 
-async function rawQuery(sql: string, params?: any[]) {
+async function rawQuery(sql: string, params?: unknown[]) {
   const { Client } = await import('pg')
   const client = new Client(DATABASE_URL)
   await client.connect()
@@ -23,7 +23,7 @@ export async function GET() {
     `)
 
     return NextResponse.json({
-      tasks: tasksResult.rows.map((row: any) => ({
+      tasks: tasksResult.rows.map((row: Record<string, unknown>) => ({
         id: row.id,
         name: row.name,
         cron: row.cron,
@@ -34,7 +34,8 @@ export async function GET() {
         nextRun: row.nextRun,
       }))
     })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
