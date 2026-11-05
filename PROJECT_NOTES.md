@@ -2,7 +2,9 @@
 
 ## Son durum
 
-- Canlı `https://skywork.seymata.com/` ana sayfası HTTP 200, fakat 5 Kasım 2026 kontrolünde `/api/projects` HTTP 500 dönüyordu: `relation "Project" does not exist`.
+- 5 Kasım 2026'da Coolify deployment `cmemivbboruz7xi1ssp3li4t` tamamlandı ve canlı kabul geçti.
+- Canlı `https://skywork.seymata.com/`, `/api/projects`, `/api/skills`, `/api/tasks`, `/manifest.webmanifest` ve `/sw.js` HTTP 200 dönüyor.
+- Canlı migration başlangıç verisi doğrulandı: 6 proje ve 6 beceri; planlanmış görev koleksiyonu geçerli biçimde boş.
 - Kök neden: Docker başlangıcında veritabanı şeması kurulmamıştı. Ayrıca `/api/setup` tabloları siliyor fakat yeniden oluşturmuyordu.
 - `script/migrate.mjs` eklendi. Şemayı ve küçük demo başlangıç verisini transaction içinde, tekrar-safe biçimde kuruyor.
 - Docker başlangıcı artık önce migration'ı, başarılı olursa Next.js sunucusunu çalıştırıyor.
@@ -24,6 +26,5 @@
 
 ## Bekleyenler
 
-- Değişiklikleri commit/push edip Coolify deploy sonucunu doğrula.
-- Deploy sonrası `/api/projects`, `/api/skills`, `/api/tasks` için HTTP 200 ve kullanıcı ekranında kartların görünmesini smoke test et.
 - Bağımlılık güvenlik bulgularını ayrı, kontrollü güncelleme ile ele al.
+- Tarayıcı paneli bu oturumda erişilemediği için görsel kullanıcı smoke testi ayrıca yapılabilir; HTTP ve veri kabulü tamamlandı.
