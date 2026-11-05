@@ -67,8 +67,8 @@ export const DICT: Translations = {
       tr: 'Hesabınıza erişin veya yeni hesap oluşturun',
     },
     continueWith: {
-      en: 'Continue with',
-      tr: 'ile devam et',
+      en: 'Continue with {{provider}}',
+      tr: '{{provider}} ile devam et',
     },
     terms: {
       en: 'By continuing, you accept our terms of service',
@@ -77,6 +77,58 @@ export const DICT: Translations = {
     notLoggedIn: {
       en: 'Not logged in',
       tr: 'Giriş yapılmadı',
+    },
+    notConfigured: {
+      en: 'Sign-in is not configured on this server yet.',
+      tr: 'Bu sunucuda giriş henüz yapılandırılmadı.',
+    },
+    name: {
+      en: 'Name',
+      tr: 'Ad',
+    },
+    email: {
+      en: 'Email',
+      tr: 'E-posta',
+    },
+    password: {
+      en: 'Password (min. 8 characters)',
+      tr: 'Şifre (en az 8 karakter)',
+    },
+    signInAction: {
+      en: 'Sign in',
+      tr: 'Giriş yap',
+    },
+    signUpAction: {
+      en: 'Create account',
+      tr: 'Hesap oluştur',
+    },
+    toSignUp: {
+      en: "Don't have an account? Sign up",
+      tr: 'Hesabınız yok mu? Kayıt olun',
+    },
+    toSignIn: {
+      en: 'Already have an account? Sign in',
+      tr: 'Zaten hesabınız var mı? Giriş yapın',
+    },
+    or: {
+      en: 'or',
+      tr: 'veya',
+    },
+    signedInAs: {
+      en: 'Signed in as',
+      tr: 'Giriş yapan',
+    },
+    signOut: {
+      en: 'Sign out',
+      tr: 'Çıkış yap',
+    },
+    account: {
+      en: 'Account',
+      tr: 'Hesap',
+    },
+    genericError: {
+      en: 'Something went wrong. Please try again.',
+      tr: 'Bir hata oluştu. Lütfen tekrar deneyin.',
     },
   },
 
@@ -121,6 +173,14 @@ export const DICT: Translations = {
     autoModel: {
       en: 'Auto Model',
       tr: 'Otomatik Model',
+    },
+    send: {
+      en: 'Send',
+      tr: 'Gönder',
+    },
+    demoNotice: {
+      en: 'This is a demo workspace: AI generation is not connected yet, so your request was not processed.',
+      tr: 'Bu bir demo çalışma alanı: yapay zekâ üretimi henüz bağlı değil, bu yüzden isteğiniz işlenmedi.',
     },
   },
 
@@ -320,11 +380,11 @@ export function t(key: string, lang: 'tr' | 'en' = 'tr', vars?: Record<string, s
   }
 
   const keys = key.split('.');
-  let value: any = DICT;
+  let value: unknown = DICT;
 
   for (const k of keys) {
     if (value && typeof value === 'object' && k in value) {
-      value = value[k];
+      value = (value as Record<string, unknown>)[k];
     } else {
       console.warn(`Translation key not found: ${key}`);
       return key; // Return key if translation missing
@@ -334,7 +394,8 @@ export function t(key: string, lang: 'tr' | 'en' = 'tr', vars?: Record<string, s
   // Handle nested objects - if we get a nested object, try to get the language-specific value
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     if ('tr' in value && 'en' in value) {
-      value = lang === 'tr' ? value.tr : value.en;
+      const langValue = value as Record<'tr' | 'en', unknown>;
+      value = lang === 'tr' ? langValue.tr : langValue.en;
     } else {
       console.warn(`Translation value is a nested object without language keys: ${key}`);
       return key;

@@ -47,7 +47,7 @@ export default function AuthModal() {
                 className={`w-full justify-start gap-3 h-12 ${provider.color}`}
               >
                 <span className="text-lg">{provider.icon}</span>
-                <span>{t('auth.continueWith')} {provider.name}</span>
+                <span>{t('auth.continueWith', { provider: provider.name })}</span>
               </Button>
             ))}
           </div>

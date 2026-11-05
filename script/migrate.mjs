@@ -84,6 +84,49 @@ try {
     CREATE INDEX IF NOT EXISTS "Skill_module_idx" ON "Skill"("module");
     CREATE INDEX IF NOT EXISTS "Skill_isActive_idx" ON "Skill"("isActive");
 
+    -- Better Auth: reuses "User"; adds its session/account/verification tables.
+    ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEFAULT false;
+
+    CREATE TABLE IF NOT EXISTS "Session" (
+      "id" TEXT PRIMARY KEY,
+      "expiresAt" TIMESTAMPTZ NOT NULL,
+      "token" TEXT NOT NULL UNIQUE,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "ipAddress" TEXT,
+      "userAgent" TEXT,
+      "userId" TEXT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS "Account" (
+      "id" TEXT PRIMARY KEY,
+      "accountId" TEXT NOT NULL,
+      "providerId" TEXT NOT NULL,
+      "userId" TEXT NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+      "accessToken" TEXT,
+      "refreshToken" TEXT,
+      "idToken" TEXT,
+      "accessTokenExpiresAt" TIMESTAMPTZ,
+      "refreshTokenExpiresAt" TIMESTAMPTZ,
+      "scope" TEXT,
+      "password" TEXT,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS "Verification" (
+      "id" TEXT PRIMARY KEY,
+      "identifier" TEXT NOT NULL,
+      "value" TEXT NOT NULL,
+      "expiresAt" TIMESTAMPTZ NOT NULL,
+      "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS "Session_userId_idx" ON "Session"("userId");
+    CREATE INDEX IF NOT EXISTS "Account_userId_idx" ON "Account"("userId");
+    CREATE INDEX IF NOT EXISTS "Verification_identifier_idx" ON "Verification"("identifier");
+
     INSERT INTO "User" ("id", "email", "name", "plan")
     VALUES ('demo-user', 'demo@skywork.ai', 'Demo Kullanıcı', 'PRO')
     ON CONFLICT ("email") DO NOTHING;

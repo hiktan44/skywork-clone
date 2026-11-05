@@ -1,7 +1,7 @@
 'use client';
 
 import { X, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useUIStore } from '@/lib/store';
@@ -19,7 +19,7 @@ export default function AnnouncementModal() {
 
   return (
     <Dialog open={announcementModalOpen} onOpenChange={setAnnouncementModalOpen}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden">
+      <DialogContent showCloseButton={false} className="max-w-4xl p-0 overflow-hidden">
         <div className="flex h-[500px]">
           <div className="w-1/2 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
             <div className="text-center text-white p-8">

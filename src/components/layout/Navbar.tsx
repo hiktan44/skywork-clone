@@ -1,14 +1,16 @@
 'use client';
 
-import { Monitor, Tablet, Menu, LogIn } from 'lucide-react';
+import { Monitor, Tablet, Menu, LogIn, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUIStore } from '@/lib/store';
 import { useT } from '@/lib/i18n';
 import LangSwitch from '@/components/LangSwitch';
+import { authClient } from '@/lib/auth-client';
 
 export default function Navbar() {
   const { toggleSidebar, setRightPanelOpen } = useUIStore();
   const t = useT();
+  const { data: session } = authClient.useSession();
 
   return (
     <header className="sticky top-0 z-50 h-[52px] w-full border-b bg-white">
@@ -56,8 +58,17 @@ export default function Navbar() {
             onClick={() => setRightPanelOpen(true)}
             className="h-9 bg-black text-white hover:bg-gray-800"
           >
-            <LogIn className="mr-2 h-4 w-4" />
-            {t('auth.signIn')}
+            {session?.user ? (
+              <>
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span className="max-w-[140px] truncate">{session.user.name || session.user.email}</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="mr-2 h-4 w-4" />
+                {t('auth.signIn')}
+              </>
+            )}
           </Button>
         </div>
       </div>
