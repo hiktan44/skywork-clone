@@ -1,4 +1,8 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Skywork Clone
+
+Skywork.ai çalışma alanından esinlenen Next.js arayüz demosu. Bu depo resmi
+SkyworkAI projelerinin fork'u değildir; mevcut git geçmişinde bir upstream kaynak
+kaydı bulunmamaktadır.
 
 ## Getting Started
 
@@ -15,6 +19,15 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+PostgreSQL ile tam yerel kurulum için:
+
+```bash
+docker compose up --build
+```
+
+Container açılışında `script/migrate.mjs` şemayı ve tekrar-safe demo verisini
+hazırlar. `DATABASE_URL` olmadan production container başlamaz.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

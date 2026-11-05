@@ -22,15 +22,15 @@ export async function GET() {
   const logs: string[] = []
 
   try {
-    logs.push('Creating tables (drop if exists)...')
-    
-    await rawQuery(`DROP TABLE IF EXISTS "ScheduledTask" CASCADE;`)
-    await rawQuery(`DROP TABLE IF EXISTS "Project" CASCADE;`)
-    await rawQuery(`DROP TABLE IF EXISTS "User" CASCADE;`)
-    await rawQuery(`DROP TABLE IF EXISTS "Skill" CASCADE;`)
-    
-    await rawQuery(`DROP TYPE IF EXISTS "ProjectType" CASCADE;`)
-    await rawQuery(`DROP TYPE IF EXISTS "Plan" CASCADE;`)
+    logs.push('Checking database schema...')
+
+    await rawQuery(`DO $$ BEGIN CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`)
+    await rawQuery(`DO $$ BEGIN CREATE TYPE "ProjectType" AS ENUM ('SLIDES', 'DOCUMENT', 'IMAGE', 'SHEET', 'WEBSITE', 'VIDEO'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;`)
+
+    await rawQuery(`CREATE TABLE IF NOT EXISTS "User" ("id" TEXT NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text, "email" TEXT NOT NULL UNIQUE, "name" TEXT, "image" TEXT, "plan" "Plan" NOT NULL DEFAULT 'FREE', "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);`)
+    await rawQuery(`CREATE TABLE IF NOT EXISTS "Project" ("id" TEXT NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text, "userId" TEXT NOT NULL, "title" TEXT NOT NULL, "type" "ProjectType" NOT NULL, "outputUrl" TEXT, "thumbnailUrl" TEXT, "isPublic" BOOLEAN NOT NULL DEFAULT false, "prompt" TEXT NOT NULL, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);`)
+    await rawQuery(`CREATE TABLE IF NOT EXISTS "ScheduledTask" ("id" TEXT NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text, "userId" TEXT NOT NULL, "name" TEXT NOT NULL, "cron" TEXT NOT NULL, "module" "ProjectType" NOT NULL, "prompt" TEXT NOT NULL, "active" BOOLEAN NOT NULL DEFAULT true, "lastRun" TIMESTAMP(3), "nextRun" TIMESTAMP(3), "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);`)
+    await rawQuery(`CREATE TABLE IF NOT EXISTS "Skill" ("id" TEXT NOT NULL PRIMARY KEY DEFAULT gen_random_uuid()::text, "name" TEXT NOT NULL, "description" TEXT NOT NULL, "module" "ProjectType" NOT NULL, "systemPrompt" TEXT, "defaultParams" JSONB, "tags" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[], "isActive" BOOLEAN NOT NULL DEFAULT true, "sortOrder" INTEGER NOT NULL DEFAULT 0, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);`)
 
     logs.push('✓ Tables created')
 
