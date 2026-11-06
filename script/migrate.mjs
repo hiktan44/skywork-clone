@@ -87,6 +87,9 @@ try {
     -- Better Auth: reuses "User"; adds its session/account/verification tables.
     ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEFAULT false;
 
+    -- Generated artifact (slides/document/sheet/website/image/storyboard) for user projects.
+    ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "content" JSONB;
+
     CREATE TABLE IF NOT EXISTS "Session" (
       "id" TEXT PRIMARY KEY,
       "expiresAt" TIMESTAMPTZ NOT NULL,

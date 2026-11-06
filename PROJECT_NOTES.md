@@ -57,6 +57,34 @@
   akış başlıkları; Google yönlendirme URL'si; tarayıcıda 607px: Google logosu, TR hata mesajları,
   görev kalıcılığı, modal kenar boşluğu. Gerçek Gemini yanıtı test edilmedi (anahtar yok).
 
+## 6 Kasım 2026 — Araçlar gerçek dosya üretiyor (commit'lenmedi)
+
+- Kullanıcı şikâyeti: "Araçları bağla çalışmıyor", çıktı başlıksız/paragrafsız, sunum yerine öneri geliyor.
+- `/api/generate` (AI SDK 7 `generateText` + `Output.object` + zod; `generateObject` v7'de deprecated):
+  SLIDES/DOCUMENT/SHEET/WEBSITE/VIDEO(storyboard)/IMAGE. Sonuç `"Project"."content"` JSONB (migrate.mjs'te
+  `ADD COLUMN IF NOT EXISTS`), `isPublic=false`, kullanıcıya ait. Yükleme/indirme öncesi `parseProjectContent` ile
+  yeniden doğrulanıyor. İndirme sunucuda: pptxgenjs / docx / exceljs (hepsi MIT; SheetJS kullanılmadı).
+- `/api/my-projects`, `/api/my-projects/[id]` (GET/DELETE), `/[id]/download?format=` — sahibi değilse 404.
+- UI: "Araçları Bağla" popover (6 araç + sohbet), seçili araç çipi, hızlı eylem düğmeleri ve beceri şablonları
+  aracı seçer; `/projects` ve `/projects/[id]` görüntüleyiciler. Chat yanıtı `components/Markdown.tsx`
+  (react-markdown + remark-gfm, `skipHtml`). Sohbet sistem istemi: Türkçe, başlıklı, bitmiş içerik.
+- Web sitesi: `sanitizeGeneratedHtml` belgeyi her zaman yeniden kurar (CSP meta tek `<head>`'in başında; `<head>` öncesi
+  yük CSP'yi body'ye düşüremez), `[\s/"']on*=` olay öznitelikleri, varlık kodlu `javascript:`/`data:text/html` URL'leri,
+  script/iframe/meta http-equiv temizlenir; önizleme `sandbox=""` iframe. QA P2 (`<svg/onload>`, `src=x/onerror`) kapatıldı:
+  ham yük tarayıcıda başlığı "PWNED" yaptı, temizlenmiş çıktı yapmadı. Gönderimde `useRef` kilidi (çift tık = tek üretim).
+- Hız sınırı: üretim 10/10 dk, doğrulamadan sonra sayılıyor. Chat 20/10 dk aynen.
+- `SKYWORK_AI_MOCK=1`: yalnız test, `MockLanguageModelV4` sabit çıktılar (`src/lib/ai-mock.ts`).
+- `npm audit`: pptxgenjs → image-size yüksek bulgusu `overrides: image-size ^2.1.0` ile kapatıldı (pptxgenjs
+  image-size'ı require etmiyor). Kritik/yüksek 0; uuid (exceljs, buf'suz kullanım) orta olarak kaldı.
+- Service worker artık yalnız production'da kaydediliyor; dev'de eski kayıt kaldırılıyor. Neden: cache-first
+  SW, `next dev`'de eski chunk'ları sunup sayfayı saniyede ~10 kez yeniden yükleme döngüsüne sokuyordu.
+- Yerel doğrulama (mock): 6 modül 201; .pptx (9 slayt, 8 not), .docx (Heading 1–3, tablo), .xlsx (sayısal hücre),
+  storyboard .docx, PNG python-pptx/python-docx/openpyxl ile açıldı; HTML'de script/onclick yok; başka kullanıcı
+  404; 12 hatalı + 11 geçerli üretim → 10×201 + 429; chat Markdown'da `<script>`/`<b>` öğesi oluşmadı.
+- Test aracı kısıtı: vi3ecode tarayıcı paneli `srcdoc`/`blob:` iframe'leri yüklemiyor ve ekran görüntüsünde iframe
+  içeriği görünmüyor; önizleme gerçek tarayıcıda (Chrome/Safari/Firefox) kontrol edilmeli.
+- Gerçek Gemini çıktısı (özellikle görsel modeli ve uzun web sayfaları) yalnız canlıda doğrulanabilir.
+
 ## 6 Kasım 2026 — içerik doldurma + P3 (commit'lenmedi, tek push'a girecek)
 
 - Kullanıcı kararı: önce içerik, sonra tek commit/push; P3'ler bu tura eklendi.

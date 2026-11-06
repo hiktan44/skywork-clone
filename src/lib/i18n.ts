@@ -508,6 +508,174 @@ export const DICT: Translations = {
     },
   },
 
+  // Generation tools selectable from the chat box
+  tools: {
+    menuTitle: {
+      en: 'Tools',
+      tr: 'Araçlar',
+    },
+    chat: {
+      en: 'Chat (no tool)',
+      tr: 'Sohbet (araçsız)',
+    },
+    SLIDES: {
+      en: 'Presentation (.pptx)',
+      tr: 'Sunum (.pptx)',
+    },
+    DOCUMENT: {
+      en: 'Document (.docx)',
+      tr: 'Belge (.docx)',
+    },
+    SHEET: {
+      en: 'Spreadsheet (.xlsx)',
+      tr: 'Tablo (.xlsx)',
+    },
+    WEBSITE: {
+      en: 'Website (.html)',
+      tr: 'Web sitesi (.html)',
+    },
+    IMAGE: {
+      en: 'Image (Gemini)',
+      tr: 'Görsel (Gemini)',
+    },
+    VIDEO: {
+      en: 'Video storyboard (.docx)',
+      tr: 'Video storyboard (.docx)',
+    },
+    active: {
+      en: 'Tool',
+      tr: 'Araç',
+    },
+    clear: {
+      en: 'Remove tool',
+      tr: 'Aracı kaldır',
+    },
+    videoNote: {
+      en: 'Real video files are not generated; you get a scene-by-scene storyboard.',
+      tr: 'Gerçek video dosyası üretilmez; sahne sahne storyboard hazırlanır.',
+    },
+  },
+
+  // Artifact generation states
+  generate: {
+    progress: {
+      en: 'Generating… this can take 20–90 seconds.',
+      tr: 'Hazırlanıyor… Bu işlem 20–90 saniye sürebilir.',
+    },
+    signIn: {
+      en: 'Sign in to generate files.',
+      tr: 'Dosya üretmek için giriş yapın.',
+    },
+    rate_limited: {
+      en: 'Too many generations. Please wait a few minutes.',
+      tr: 'Çok fazla üretim isteği. Lütfen birkaç dakika bekleyin.',
+    },
+    quota_exceeded: {
+      en: 'The AI quota is exhausted. Please try again later.',
+      tr: 'Yapay zekâ kotası doldu. Lütfen daha sonra tekrar deneyin.',
+    },
+    image_unavailable: {
+      en: 'The image model did not return an image (it may be unsupported or out of quota).',
+      tr: 'Görsel modeli bir görsel döndürmedi (model desteklenmiyor ya da kota dolmuş olabilir).',
+    },
+    invalid_output: {
+      en: 'The AI output could not be validated. Please try again.',
+      tr: 'Yapay zekâ çıktısı doğrulanamadı. Lütfen tekrar deneyin.',
+    },
+    failed: {
+      en: 'The file could not be generated. Please try again.',
+      tr: 'Dosya üretilemedi. Lütfen tekrar deneyin.',
+    },
+  },
+
+  // Generated projects (Projelerim)
+  projects: {
+    title: {
+      en: 'My Projects',
+      tr: 'Projelerim',
+    },
+    description: {
+      en: 'Files you generated with Skywork tools.',
+      tr: 'Skywork araçlarıyla ürettiğiniz dosyalar.',
+    },
+    empty: {
+      en: 'You have no generated projects yet. Pick a tool in the chat box to create one.',
+      tr: 'Henüz üretilmiş projeniz yok. Sohbet kutusundan bir araç seçerek oluşturun.',
+    },
+    signIn: {
+      en: 'Sign in to see your projects.',
+      tr: 'Projelerinizi görmek için giriş yapın.',
+    },
+    open: {
+      en: 'Open',
+      tr: 'Aç',
+    },
+    back: {
+      en: 'My Projects',
+      tr: 'Projelerim',
+    },
+    download: {
+      en: 'Download',
+      tr: 'İndir',
+    },
+    delete: {
+      en: 'Delete',
+      tr: 'Sil',
+    },
+    deleteConfirm: {
+      en: 'Delete this project permanently?',
+      tr: 'Bu proje kalıcı olarak silinsin mi?',
+    },
+    notFound: {
+      en: 'Project not found.',
+      tr: 'Proje bulunamadı.',
+    },
+    noContent: {
+      en: 'This project has no generated file.',
+      tr: 'Bu projede üretilmiş bir dosya yok.',
+    },
+    slide: {
+      en: 'Slide',
+      tr: 'Slayt',
+    },
+    prev: {
+      en: 'Previous',
+      tr: 'Önceki',
+    },
+    next: {
+      en: 'Next',
+      tr: 'Sonraki',
+    },
+    notes: {
+      en: 'Speaker notes',
+      tr: 'Konuşmacı notu',
+    },
+    storyboardNotice: {
+      en: 'This is a storyboard, not a video file.',
+      tr: 'Bu bir video değil, storyboard (sahne planı).',
+    },
+    websiteNote: {
+      en: 'Preview runs in a sandbox with scripts disabled.',
+      tr: 'Önizleme, betikler kapalı bir sandbox içinde çalışır.',
+    },
+    sceneTime: {
+      en: 'Time',
+      tr: 'Zaman',
+    },
+    sceneVisual: {
+      en: 'Visual',
+      tr: 'Görüntü',
+    },
+    sceneVoice: {
+      en: 'Voice-over',
+      tr: 'Seslendirme',
+    },
+    sceneText: {
+      en: 'On-screen text',
+      tr: 'Ekran yazısı',
+    },
+  },
+
   // Better Auth error codes (API + OAuth callback)
   authErrors: {
     INVALID_EMAIL_OR_PASSWORD: {

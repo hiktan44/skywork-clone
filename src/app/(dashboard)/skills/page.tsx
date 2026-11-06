@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { isGenerationModule } from '@/lib/generation/schemas';
 
 import { useEffect, useState } from 'react';
 import { Sparkles, Tag } from 'lucide-react';
@@ -34,13 +35,15 @@ interface Skill {
 }
 
 export default function SkillsPage() {
-  const { sidebarOpen, rightPanelOpen, setChatDraft } = useUIStore();
+  const { sidebarOpen, rightPanelOpen, setChatDraft, setSelectedModule } = useUIStore();
   const router = useRouter();
 
   // Prefill the home chat with the skill's example prompt (or its name as a starter).
   const applySkill = (skill: Skill) => {
     const example = skill.defaultParams?.examplePrompt;
     setChatDraft(typeof example === 'string' && example ? example : `${skill.name}: `);
+    // A skill also selects its module's tool, so the result is a finished file.
+    setSelectedModule(isGenerationModule(skill.module) ? skill.module : null);
     router.push('/');
   };
   const [skills, setSkills] = useState<Skill[]>([]);

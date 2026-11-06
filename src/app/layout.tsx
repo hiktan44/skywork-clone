@@ -53,7 +53,17 @@ export default function RootLayout({
           <TooltipProvider>{children}</TooltipProvider>
         </LanguageProvider>
       <LegalFooter />
-      <script dangerouslySetInnerHTML={{ __html: "if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){window.addEventListener('load', function(){navigator.serviceWorker.register('/sw.js').catch(function(){});})}"}} />
+      {/* The PWA service worker caches JS/CSS cache-first, which serves stale chunks under `next dev`
+          (stable chunk names) and can trap the page in a reload loop. Register it only in production
+          builds; in development remove any registration left over from an earlier session. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            process.env.NODE_ENV === 'production'
+              ? "if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){window.addEventListener('load', function(){navigator.serviceWorker.register('/sw.js').catch(function(){});})}"
+              : "if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});}",
+        }}
+      />
       </body>
     </html>
   );

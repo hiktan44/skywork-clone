@@ -11,7 +11,7 @@ const sidebarItems = [
   { id: 'home', label: 'nav.home', icon: Home, href: '/' },
   { id: 'new', label: 'nav.new', icon: Plus, href: '/?action=new' },
   { id: 'skills', label: 'nav.skills', icon: Sparkles, href: '/skills' },
-  { id: 'projects', label: 'nav.projects', icon: Folder, href: '/' },
+  { id: 'projects', label: 'nav.projects', icon: Folder, href: '/projects' },
   { id: 'scheduled', label: 'nav.scheduled', icon: Clock, href: '/scheduled', badge: 'common.new' },
   { id: 'showcase', label: 'nav.showcase', icon: Eye, href: '/showcase' },
   { id: 'im', label: 'nav.connect', icon: MessageSquare, href: '#', external: true },

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { streamText, type ModelMessage } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { getTextModel, isAiEnabled } from '@/lib/ai';
 import { getSessionUser } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -12,12 +12,16 @@ const RATE_LIMIT = 20; // requests
 const RATE_WINDOW_MS = 10 * 60 * 1000; // per 10 minutes per user
 
 const SYSTEM_PROMPT =
-  'Sen SkyClaw adlı, Skywork çalışma alanının yardımcı yapay zekâ asistanısın. ' +
-  'Kullanıcının dilinde (varsayılan Türkçe) kısa, net ve yardımcı yanıtlar ver. ' +
-  'Sunum, belge, tablo ve web sitesi taslakları için yapılandırılmış Markdown kullan.';
+  'Sen SkyClaw adlı, Skywork çalışma alanının yapay zekâ asistanısın. Kullanıcı başka bir dil istemedikçe ' +
+  'Türkçe yaz. İsteneni TAMAMLANMIŞ ve doğrudan kullanılabilir biçimde üret: "öneri", "taslak" ya da ' +
+  '"buraya ... yazın" gibi yer tutucular bırakma, somut ve gerçekçi içerik ver. Yanıtı Markdown ile ' +
+  'biçimlendir: kısa bir ## başlıkla başla, konuyu ### alt başlıklı bölümlere ayır, her bölümde dolu ' +
+  'paragraflar yaz; gerektiğinde madde listesi ve tablo kullan. Ham HTML kullanma. Kullanıcı indirilebilir ' +
+  'bir sunum, belge, tablo, web sitesi veya görsel isterse, sohbet kutusundaki "Araçları Bağla" menüsünden ' +
+  'ilgili aracı seçebileceğini kısaca hatırlat ve yine de içeriği eksiksiz yaz.';
 
 function chatEnabled(): boolean {
-  return Boolean(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+  return isAiEnabled();
 }
 
 /** Lets the client know whether real generation is available (runtime env, not build-time). */
@@ -71,12 +75,11 @@ export async function POST(request: Request) {
     );
   }
 
-  const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY });
   const result = streamText({
-    model: google(process.env.GEMINI_MODEL || 'gemini-flash-latest'),
+    model: await getTextModel('CHAT'),
     system: SYSTEM_PROMPT,
     messages,
-    maxOutputTokens: 2048,
+    maxOutputTokens: 8192,
     abortSignal: request.signal,
     onError: ({ error }) => {
       console.error('[chat] generation failed:', error instanceof Error ? error.message : error);

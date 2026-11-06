@@ -74,6 +74,33 @@ Ana sayfadaki SkyClaw sohbeti Vercel AI SDK + Google Gemini ile akışlı yanıt
 | `GOOGLE_GENERATIVE_AI_API_KEY` | Sohbet için | Google AI Studio API anahtarı. Yoksa sohbet "demo" uyarısı gösterir. |
 | `GEMINI_MODEL` | Hayır | Varsayılan `gemini-flash-latest`. |
 
+## Araçlar: bitmiş dosya üretimi
+
+Sohbet kutusundaki **Araçları Bağla** menüsü, hızlı eylem düğmeleri (Slaytlar, Belgeler, …) ve
+beceri şablonları bir araç seçer; istek `/api/generate`'e gider, sonuç kullanıcının projesine
+(`"Project"."content"` JSONB) kaydedilir ve **Projelerim** (`/projects/[id]`) sayfasında açılır.
+
+| Araç | Üretim | Görüntüleme | İndirme |
+|---|---|---|---|
+| Sunum | Gemini → zod doğrulamalı slayt JSON'u (8–12 slayt, konuşmacı notu) | Slayt gezgini | `.pptx` (pptxgenjs, MIT) |
+| Belge | Başlıklı Markdown | Güvenli Markdown | `.docx` (docx, MIT), `.md` |
+| Tablo | Sütun/satır JSON'u | Tablo | `.xlsx` (exceljs, MIT) |
+| Web sitesi | Tek dosya HTML+CSS; `<script>`/olay öznitelikleri temizlenir, CSP eklenir | `sandbox=""` iframe (betik kapalı) | `.html` |
+| Görsel | `gemini-3.1-flash-image-preview` (`GEMINI_IMAGE_MODEL` ile değişir) | Görsel | PNG/JPG |
+| Video | Sahne sahne **storyboard** (video dosyası değildir) | Sahne tablosu | `.docx` |
+
+Kurallar: giriş şartı; kullanıcı başına 10 dakikada 10 üretim (yalnızca doğrulanan istekler sayılır);
+model çıktısı kaydedilmeden ve dosyaya çevrilmeden önce zod ile doğrulanır; projeler yalnızca sahibine
+açıktır (`/api/my-projects`). Sohbet yanıtları `react-markdown` + `remark-gfm` ile ham HTML kapalı gösterilir.
+
+**Test:** `SKYWORK_AI_MOCK=1` gerçek anahtar olmadan AI SDK `MockLanguageModelV4` ile her modülü
+sabit örnek çıktıyla çalıştırır. Yalnızca yerel/QA testinde kullanın, production'da tanımlamayın.
+
+| Değişken | Açıklama |
+|---|---|
+| `GEMINI_IMAGE_MODEL` | Varsayılan `gemini-3.1-flash-image-preview` |
+| `SKYWORK_AI_MOCK` | Yalnız test: `1` ise mock modeller |
+
 ## Örnek içerik
 
 `script/migrate.mjs` her açılışta tekrar-safe biçimde (`ON CONFLICT ("id") DO NOTHING`) 18 herkese açık
