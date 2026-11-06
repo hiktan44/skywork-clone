@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import type { Project } from '@/lib/types';
+
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { mockProjects } from '@/lib/mock-data';
 import { useT } from '@/lib/i18n';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -12,6 +14,25 @@ import ProjectGrid from '@/components/dashboard/ProjectGrid';
 export default function ShowcasePage() {
   const { sidebarOpen, rightPanelOpen } = useUIStore();
   const t = useT();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/projects')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then((data: { projects?: Project[] }) => {
+        if (cancelled) return;
+        setProjects(data.projects ?? []);
+        setStatus('ready');
+      })
+      .catch(() => {
+        if (!cancelled) setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -31,7 +52,13 @@ export default function ShowcasePage() {
 
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">{t('dashboard.trending')}</h2>
-              <ProjectGrid projects={mockProjects} />
+              {status === 'loading' ? (
+                <p className="text-gray-500">{t('dashboard.loading')}</p>
+              ) : status === 'error' ? (
+                <p className="text-gray-500">{t('dashboard.loadError')}</p>
+              ) : (
+                <ProjectGrid projects={projects} />
+              )}
             </div>
           </div>
         </main>

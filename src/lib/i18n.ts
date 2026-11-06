@@ -134,6 +134,14 @@ export const DICT: Translations = {
 
   // Dashboard
   dashboard: {
+    useAsPrompt: {
+      en: 'Use this prompt',
+      tr: 'Bu istemi kullan',
+    },
+    loadError: {
+      en: 'Content could not be loaded.',
+      tr: 'İçerik yüklenemedi.',
+    },
     trending: {
       en: 'Trending Projects',
       tr: 'Trend Projeler',
@@ -177,6 +185,30 @@ export const DICT: Translations = {
     send: {
       en: 'Send',
       tr: 'Gönder',
+    },
+    signInRequired: {
+      en: 'Sign in to chat with SkyClaw.',
+      tr: 'SkyClaw ile sohbet etmek için giriş yapın.',
+    },
+    rateLimited: {
+      en: 'You are sending messages too quickly. Please wait a few minutes.',
+      tr: 'Çok hızlı mesaj gönderiyorsunuz. Lütfen birkaç dakika bekleyin.',
+    },
+    error: {
+      en: 'The reply could not be generated. Please try again.',
+      tr: 'Yanıt üretilemedi. Lütfen tekrar deneyin.',
+    },
+    thinking: {
+      en: 'Thinking…',
+      tr: 'Düşünüyor…',
+    },
+    you: {
+      en: 'You',
+      tr: 'Siz',
+    },
+    clear: {
+      en: 'New chat',
+      tr: 'Yeni sohbet',
     },
     demoNotice: {
       en: 'This is a demo workspace: AI generation is not connected yet, so your request was not processed.',
@@ -246,6 +278,50 @@ export const DICT: Translations = {
 
   // Scheduled Tasks
   tasks: {
+    templatesTitle: {
+      en: 'Start with a template',
+      tr: 'Bir şablonla başlayın',
+    },
+    templatesHint: {
+      en: 'Add an example task with one click and edit it later.',
+      tr: 'Örnek bir görevi tek tıkla ekleyin.',
+    },
+    addTemplate: {
+      en: 'Add',
+      tr: 'Ekle',
+    },
+    deleteTitle: {
+      en: 'Delete this task?',
+      tr: 'Bu görev silinsin mi?',
+    },
+    deleteDescription: {
+      en: '“{{name}}” will be permanently removed.',
+      tr: '“{{name}}” kalıcı olarak silinecek.',
+    },
+    delete: {
+      en: 'Delete',
+      tr: 'Sil',
+    },
+    signInRequired: {
+      en: 'Sign in to create and keep your scheduled tasks.',
+      tr: 'Zamanlanmış görev oluşturmak ve saklamak için giriş yapın.',
+    },
+    empty: {
+      en: 'No scheduled tasks yet.',
+      tr: 'Henüz zamanlanmış görev yok.',
+    },
+    saveError: {
+      en: 'The task could not be saved. Please try again.',
+      tr: 'Görev kaydedilemedi. Lütfen tekrar deneyin.',
+    },
+    invalidCron: {
+      en: 'Enter a 5-field cron expression, e.g. 0 9 * * 1',
+      tr: '5 alanlı bir cron ifadesi girin, ör. 0 9 * * 1',
+    },
+    runNote: {
+      en: 'Tasks are saved to your account; automatic execution is not enabled yet.',
+      tr: 'Görevler hesabınıza kaydedilir; otomatik çalıştırma henüz etkin değil.',
+    },
     title: {
       en: 'Scheduled Tasks',
       tr: 'Zamanlanmış Görevler',
@@ -357,6 +433,138 @@ export const DICT: Translations = {
     newBadge: {
       en: 'New · AI Note Taker',
       tr: 'Yeni · AI Not Alıcı',
+    },
+  },
+
+  // Project/skill/task module names
+  modules: {
+    SLIDES: {
+      en: 'Slides',
+      tr: 'Sunum',
+    },
+    DOCUMENT: {
+      en: 'Document',
+      tr: 'Belge',
+    },
+    IMAGE: {
+      en: 'Image',
+      tr: 'Görsel',
+    },
+    SHEET: {
+      en: 'Sheet',
+      tr: 'Tablo',
+    },
+    WEBSITE: {
+      en: 'Website',
+      tr: 'Web Sitesi',
+    },
+    VIDEO: {
+      en: 'Video',
+      tr: 'Video',
+    },
+  },
+
+  // Example scheduled-task templates shown on an empty /scheduled page
+  taskTemplates: {
+    weeklyReportName: {
+      en: 'Monday market report',
+      tr: 'Pazartesi pazar raporu',
+    },
+    weeklyReportPrompt: {
+      en: 'Prepare a weekly market and competitor summary report',
+      tr: 'Haftalık pazar ve rakip özet raporunu hazırla',
+    },
+    budgetName: {
+      en: 'Monthly budget check',
+      tr: 'Aylık bütçe kontrolü',
+    },
+    budgetPrompt: {
+      en: 'Summarise this month’s income, expenses and budget variance in a table',
+      tr: 'Bu ayın gelir, gider ve bütçe sapmasını tablo hâlinde özetle',
+    },
+    socialName: {
+      en: 'Daily social post',
+      tr: 'Günlük sosyal medya görseli',
+    },
+    socialPrompt: {
+      en: 'Create a social media visual brief for today’s trending topic',
+      tr: 'Günün trend konusu için sosyal medya görsel brifi oluştur',
+    },
+    newsletterName: {
+      en: 'Friday newsletter',
+      tr: 'Cuma bülteni',
+    },
+    newsletterPrompt: {
+      en: 'Draft the weekly company newsletter with highlights and next week’s plan',
+      tr: 'Haftanın öne çıkanları ve gelecek hafta planıyla şirket bültenini hazırla',
+    },
+    salesDeckName: {
+      en: 'Quarterly sales deck',
+      tr: 'Çeyreklik satış sunumu',
+    },
+    salesDeckPrompt: {
+      en: 'Build a quarterly sales performance presentation for management',
+      tr: 'Yönetim için çeyreklik satış performansı sunumu hazırla',
+    },
+  },
+
+  // Better Auth error codes (API + OAuth callback)
+  authErrors: {
+    INVALID_EMAIL_OR_PASSWORD: {
+      en: 'Invalid email or password.',
+      tr: 'E-posta veya şifre hatalı.',
+    },
+    INVALID_EMAIL: {
+      en: 'Please enter a valid email address.',
+      tr: 'Lütfen geçerli bir e-posta adresi girin.',
+    },
+    INVALID_PASSWORD: {
+      en: 'Invalid password.',
+      tr: 'Şifre geçersiz.',
+    },
+    PASSWORD_TOO_SHORT: {
+      en: 'Password must be at least 8 characters.',
+      tr: 'Şifre en az 8 karakter olmalı.',
+    },
+    PASSWORD_TOO_LONG: {
+      en: 'Password is too long.',
+      tr: 'Şifre çok uzun.',
+    },
+    USER_ALREADY_EXISTS: {
+      en: 'An account with this email already exists.',
+      tr: 'Bu e-posta ile kayıtlı bir hesap zaten var.',
+    },
+    USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: {
+      en: 'An account with this email already exists.',
+      tr: 'Bu e-posta ile kayıtlı bir hesap zaten var.',
+    },
+    FAILED_TO_CREATE_USER: {
+      en: 'Could not create the account. Please try again.',
+      tr: 'Hesap oluşturulamadı. Lütfen tekrar deneyin.',
+    },
+    EMAIL_NOT_VERIFIED: {
+      en: 'Your email address is not verified.',
+      tr: 'E-posta adresiniz doğrulanmamış.',
+    },
+    TOO_MANY_REQUESTS: {
+      en: 'Too many attempts. Please wait a moment.',
+      tr: 'Çok fazla deneme yapıldı. Lütfen biraz bekleyin.',
+    },
+    account_not_linked: {
+      en: 'This email already has a password account. Sign in with your email and password.',
+      tr: 'Bu e-posta ile şifreli bir hesap zaten var. Lütfen e-posta ve şifrenizle giriş yapın.',
+    },
+    access_denied: {
+      en: 'Google sign-in was cancelled.',
+      tr: 'Google ile giriş iptal edildi.',
+    },
+    state_mismatch: {
+      en: 'Sign-in session expired. Please try again.',
+      tr: 'Giriş oturumunun süresi doldu. Lütfen tekrar deneyin.',
+    },
+    email_not_found: {
+      en: 'Your Google account did not share an email address.',
+      tr: 'Google hesabınız bir e-posta adresi paylaşmadı.',
     },
   },
 

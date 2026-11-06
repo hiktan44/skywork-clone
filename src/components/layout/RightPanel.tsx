@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useUIStore } from '@/lib/store';
 import { useT } from '@/lib/i18n';
 import { authClient } from '@/lib/auth-client';
+import { GoogleIcon, GitHubIcon } from '@/components/icons/ProviderIcons';
 
 type SocialProvider = 'google' | 'github';
 
@@ -17,14 +18,22 @@ interface AuthConfig {
   socialProviders: SocialProvider[];
 }
 
-const providerMeta: Record<SocialProvider, { name: string; icon: string }> = {
-  google: { name: 'Google', icon: '🔴' },
-  github: { name: 'GitHub', icon: '🐙' },
+const providerMeta: Record<SocialProvider, { name: string; Icon: typeof GoogleIcon }> = {
+  google: { name: 'Google', Icon: GoogleIcon },
+  github: { name: 'GitHub', Icon: GitHubIcon },
 };
 
 export default function RightPanel() {
-  const { rightPanelOpen, setRightPanelOpen } = useUIStore();
+  const { rightPanelOpen, setRightPanelOpen, authErrorCode, setAuthErrorCode } = useUIStore();
   const t = useT();
+
+  /** Maps a Better Auth error code to a localized message (falls back to a generic one). */
+  const authErrorMessage = (code?: string) => {
+    if (!code) return t('auth.genericError');
+    const key = `authErrors.${code}`;
+    const message = t(key);
+    return message === key ? t('auth.genericError') : message;
+  };
   const { data: session, isPending: sessionPending } = authClient.useSession();
 
   const [config, setConfig] = useState<AuthConfig | null>(null);
@@ -34,6 +43,25 @@ export default function RightPanel() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Social sign-in failures redirect back with ?error=<code>; surface them in the panel.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('error');
+    if (!code) return;
+    setAuthErrorCode(code);
+    setRightPanelOpen(true);
+    params.delete('error');
+    params.delete('error_description');
+    const query = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (query ? `?${query}` : ''));
+  }, [setAuthErrorCode, setRightPanelOpen]);
+
+  const shownError = error ?? (authErrorCode ? authErrorMessage(authErrorCode) : null);
+  const clearErrors = () => {
+    setError(null);
+    setAuthErrorCode(null);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -53,14 +81,14 @@ export default function RightPanel() {
   const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    setError(null);
+    clearErrors();
     const result =
       mode === 'signUp'
         ? await authClient.signUp.email({ name: name.trim() || email, email, password })
         : await authClient.signIn.email({ email, password });
     setBusy(false);
     if (result.error) {
-      setError(result.error.message || t('auth.genericError'));
+      setError(result.error.status === 429 ? authErrorMessage('TOO_MANY_REQUESTS') : authErrorMessage(result.error.code));
       return;
     }
     setPassword('');
@@ -68,9 +96,9 @@ export default function RightPanel() {
   };
 
   const handleSocial = async (provider: SocialProvider) => {
-    setError(null);
-    const result = await authClient.signIn.social({ provider, callbackURL: '/' });
-    if (result?.error) setError(result.error.message || t('auth.genericError'));
+    clearErrors();
+    const result = await authClient.signIn.social({ provider, callbackURL: '/', errorCallbackURL: '/' });
+    if (result?.error) setError(authErrorMessage(result.error.code));
   };
 
   const handleSignOut = async () => {
@@ -130,7 +158,10 @@ export default function RightPanel() {
                     className="w-full justify-start gap-3 h-12"
                     onClick={() => handleSocial(provider)}
                   >
-                    <span className="text-lg">{providerMeta[provider].icon}</span>
+                    {(() => {
+                      const { Icon } = providerMeta[provider];
+                      return <Icon className="h-5 w-5" />;
+                    })()}
                     <span>{t('auth.continueWith', { provider: providerMeta[provider].name })}</span>
                   </Button>
                 ))}
@@ -164,9 +195,9 @@ export default function RightPanel() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete={mode === 'signUp' ? 'new-password' : 'current-password'}
               />
-              {error && (
+              {shownError && (
                 <p role="alert" className="text-sm text-red-600">
-                  {error}
+                  {shownError}
                 </p>
               )}
               <Button type="submit" className="w-full h-11 bg-black text-white hover:bg-gray-800" disabled={busy}>
@@ -180,7 +211,7 @@ export default function RightPanel() {
               className="w-full text-center text-sm text-purple-700 hover:underline"
               onClick={() => {
                 setMode(mode === 'signIn' ? 'signUp' : 'signIn');
-                setError(null);
+                clearErrors();
               }}
             >
               {mode === 'signIn' ? t('auth.toSignUp') : t('auth.toSignIn')}

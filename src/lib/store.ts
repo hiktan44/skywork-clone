@@ -6,6 +6,8 @@ interface UIState {
   authModalOpen: boolean;
   announcementModalOpen: boolean;
   rightPanelOpen: boolean;
+  authErrorCode: string | null;
+  chatDraft: string;
   selectedProject: Project | null;
   trendingProjects: Project[];
   scheduledTasks: ScheduledTask[];
@@ -13,6 +15,8 @@ interface UIState {
   setAuthModalOpen: (open: boolean) => void;
   setAnnouncementModalOpen: (open: boolean) => void;
   setRightPanelOpen: (open: boolean) => void;
+  setAuthErrorCode: (code: string | null) => void;
+  setChatDraft: (draft: string) => void;
   setSelectedProject: (project: Project | null) => void;
   setTrendingProjects: (projects: Project[]) => void;
   setScheduledTasks: (tasks: ScheduledTask[]) => void;
@@ -23,6 +27,8 @@ export const useUIStore = create<UIState>((set) => ({
   authModalOpen: false,
   announcementModalOpen: false,
   rightPanelOpen: false,
+  authErrorCode: null,
+  chatDraft: '',
   selectedProject: null,
   trendingProjects: [],
   scheduledTasks: [],
@@ -30,6 +36,8 @@ export const useUIStore = create<UIState>((set) => ({
   setAuthModalOpen: (open) => set({ authModalOpen: open }),
   setAnnouncementModalOpen: (open) => set({ announcementModalOpen: open }),
   setRightPanelOpen: (open) => set({ rightPanelOpen: open }),
+  setAuthErrorCode: (code) => set({ authErrorCode: code }),
+  setChatDraft: (draft) => set({ chatDraft: draft }),
   setSelectedProject: (project) => set({ selectedProject: project }),
   setTrendingProjects: (projects) => set({ trendingProjects: projects }),
   setScheduledTasks: (tasks) => set({ scheduledTasks: tasks }),

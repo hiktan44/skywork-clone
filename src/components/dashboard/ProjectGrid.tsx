@@ -1,9 +1,12 @@
 'use client';
 
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import { Project } from '@/lib/types';
-import { Card } from '@/components/ui/card';
-import { Presentation, FileText, Image, Table, Globe, Video, Folder } from 'lucide-react';
+import { Presentation, FileText, Image as ImageIcon, Table, Globe, Video, Folder } from 'lucide-react';
 import { useT } from '@/lib/i18n';
+import { useUIStore } from '@/lib/store';
+import { coverFor } from '@/lib/covers';
 
 interface ProjectGridProps {
   projects: Project[];
@@ -12,37 +15,26 @@ interface ProjectGridProps {
 const iconMap: Record<string, React.ElementType> = {
   SLIDES: Presentation,
   DOCUMENT: FileText,
-  IMAGE: Image,
+  IMAGE: ImageIcon,
   SHEET: Table,
   WEBSITE: Globe,
   VIDEO: Video,
 };
 
-const moduleGradients: Record<string, string> = {
-  SLIDES: 'from-red-100 to-orange-100',
-  DOCUMENT: 'from-blue-100 to-cyan-100',
-  IMAGE: 'from-amber-100 to-yellow-100',
-  SHEET: 'from-green-100 to-emerald-100',
-  WEBSITE: 'from-violet-100 to-purple-100',
-  VIDEO: 'from-pink-100 to-rose-100',
+const moduleColor: Record<string, string> = {
+  SLIDES: 'bg-red-500',
+  DOCUMENT: 'bg-blue-500',
+  IMAGE: 'bg-amber-500',
+  SHEET: 'bg-green-500',
+  WEBSITE: 'bg-violet-500',
+  VIDEO: 'bg-pink-500',
 };
-
-const heights = [100, 140, 120, 180, 110, 160, 130, 150];
 
 export default function ProjectGrid({ projects }: ProjectGridProps) {
   const t = useT();
-
-  const getModuleColor = (type: string) => {
-    switch (type) {
-      case 'SLIDES': return 'bg-red-500';
-      case 'DOCUMENT': return 'bg-blue-500';
-      case 'IMAGE': return 'bg-amber-500';
-      case 'SHEET': return 'bg-green-500';
-      case 'WEBSITE': return 'bg-violet-500';
-      case 'VIDEO': return 'bg-pink-500';
-      default: return 'bg-gray-500';
-    }
-  };
+  const router = useRouter();
+  const pathname = usePathname();
+  const { setChatDraft } = useUIStore();
 
   if (projects.length === 0) {
     return (
@@ -52,33 +44,52 @@ export default function ProjectGrid({ projects }: ProjectGridProps) {
     );
   }
 
+  // Clicking a card reuses its prompt in the chat box on the home page.
+  const applyPrompt = (prompt: string) => {
+    setChatDraft(prompt);
+    if (pathname !== '/') {
+      router.push('/');
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('chat-input')?.focus({ preventScroll: true });
+  };
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {projects.map((project, index) => {
         const Icon = iconMap[project.type] || Folder;
-        const gradient = moduleGradients[project.type] || 'from-gray-100 to-gray-200';
         return (
-          <Card
+          <button
             key={project.id}
-            className="group cursor-pointer overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02]"
-            style={{
-              minHeight: `${heights[index % heights.length]}px`,
-            }}
+            type="button"
+            onClick={() => applyPrompt(project.prompt)}
+            title={`${t('dashboard.useAsPrompt')}: ${project.prompt}`}
+            className="group overflow-hidden rounded-xl border bg-white text-left transition-all hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-2 focus-visible:outline-purple-500"
           >
-            <div className="relative h-full">
-              <div className={`w-full h-full bg-gradient-to-br ${gradient}`} />
-
-              <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                <h3 className="text-xs font-semibold text-white truncate">
-                  {project.title}
-                </h3>
-              </div>
-
-              <div className={`absolute top-2 right-2 w-6 h-6 rounded-full ${getModuleColor(project.type)} flex items-center justify-center text-white`}>
+            <div className="relative aspect-[10/7] w-full overflow-hidden">
+              <Image
+                src={coverFor(project)}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                priority={index < 4}
+                className="object-cover transition-transform group-hover:scale-[1.03]"
+              />
+              <div
+                className={`absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full text-white ${moduleColor[project.type] || 'bg-gray-500'}`}
+              >
                 <Icon className="h-3 w-3" />
               </div>
             </div>
-          </Card>
+            <div className="space-y-1 p-3">
+              <h3 className="truncate text-xs font-semibold text-gray-900">{project.title}</h3>
+              <p className="line-clamp-2 text-[11px] leading-snug text-gray-500">{project.prompt}</p>
+              <span className="inline-block text-[10px] font-medium uppercase tracking-wide text-gray-400">
+                {t(`modules.${project.type}`)}
+              </span>
+            </div>
+          </button>
         );
       })}
     </div>

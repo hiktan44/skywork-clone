@@ -19,9 +19,12 @@ export default function AnnouncementModal() {
 
   return (
     <Dialog open={announcementModalOpen} onOpenChange={setAnnouncementModalOpen}>
-      <DialogContent showCloseButton={false} className="max-w-4xl p-0 overflow-hidden">
-        <div className="flex h-[500px]">
-          <div className="w-1/2 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-[calc(100%-2rem)] sm:max-w-4xl max-h-[calc(100dvh-2rem)] overflow-y-auto p-0"
+      >
+        <div className="flex flex-col sm:flex-row sm:h-[500px]">
+          <div className="hidden sm:flex sm:w-1/2 bg-gradient-to-br from-purple-500 to-pink-500 items-center justify-center">
             <div className="text-center text-white p-8">
               <div className="text-6xl mb-4">🎉</div>
               <h3 className="text-2xl font-bold mb-2">{t('announcement.features')}</h3>
@@ -29,9 +32,10 @@ export default function AnnouncementModal() {
             </div>
           </div>
 
-          <div className="w-1/2 p-8 flex flex-col relative">
+          <div className="w-full sm:w-1/2 p-6 sm:p-8 flex flex-col relative">
             <button
               onClick={() => setAnnouncementModalOpen(false)}
+              aria-label={t('announcement.close')}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
             >
               <X className="h-5 w-5" />
@@ -42,7 +46,7 @@ export default function AnnouncementModal() {
                 <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 mb-3">
                   {t('announcement.newBadge')}
                 </Badge>
-                <h2 className="text-3xl font-bold text-gray-900 leading-tight">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight pr-6">
                   {t('announcement.automate')}
                 </h2>
               </div>

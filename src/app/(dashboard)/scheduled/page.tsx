@@ -6,6 +6,7 @@ import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { ProjectType } from '@/lib/types';
 import { useT } from '@/lib/i18n';
+import { authClient } from '@/lib/auth-client';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -35,8 +36,25 @@ interface Task {
   nextRun: string | null;
 }
 
+const TASK_TEMPLATES: { key: string; cron: string; module: ProjectType }[] = [
+  { key: 'weeklyReport', cron: '0 9 * * 1', module: ProjectType.DOCUMENT },
+  { key: 'budget', cron: '0 10 1 * *', module: ProjectType.SHEET },
+  { key: 'social', cron: '0 8 * * *', module: ProjectType.IMAGE },
+  { key: 'newsletter', cron: '0 14 * * 5', module: ProjectType.DOCUMENT },
+  { key: 'salesDeck', cron: '0 9 1 */3 *', module: ProjectType.SLIDES },
+];
+
+const MODULES = [
+  ProjectType.SLIDES,
+  ProjectType.DOCUMENT,
+  ProjectType.IMAGE,
+  ProjectType.SHEET,
+  ProjectType.WEBSITE,
+  ProjectType.VIDEO,
+];
+
 export default function ScheduledTasksPage() {
-  const { sidebarOpen, rightPanelOpen } = useUIStore();
+  const { sidebarOpen, rightPanelOpen, setRightPanelOpen } = useUIStore();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,48 +66,112 @@ export default function ScheduledTasksPage() {
   });
   const t = useT();
 
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const [signedIn, setSignedIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // Reload the user's tasks whenever the signed-in user changes.
+  const userId = session?.user?.id;
   useEffect(() => {
+    if (sessionPending) return;
+    let cancelled = false;
     async function fetchTasks() {
+      setLoading(true);
       try {
-        const res = await fetch('/api/tasks');
+        const res = await fetch('/api/tasks', { cache: 'no-store' });
         const data = await res.json();
-        if (data.tasks) {
-          setTasks(data.tasks);
-        }
+        if (cancelled) return;
+        setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+        setSignedIn(Boolean(data.signedIn));
       } catch (e) {
         console.error('Failed to fetch tasks:', e);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     fetchTasks();
-  }, []);
-
-  const handleCreateTask = () => {
-    if (!newTask.name || !newTask.cron || !newTask.prompt) return;
-
-    const task: Task = {
-      id: Date.now().toString(),
-      ...newTask,
-      active: true,
-      lastRun: null,
-      nextRun: new Date().toISOString(),
+    return () => {
+      cancelled = true;
     };
+  }, [userId, sessionPending]);
 
-    setTasks([...tasks, task]);
-    setIsDialogOpen(false);
-    setNewTask({ name: '', cron: '', module: ProjectType.DOCUMENT, prompt: '' });
+  const [pendingDelete, setPendingDelete] = useState<Task | null>(null);
+  const moduleItems = MODULES.map((m) => ({ value: m, label: t(`modules.${m}`) }));
+
+  /** POSTs a task; returns true when it was saved. */
+  const createTask = async (input: NewTask): Promise<boolean> => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 401) setRightPanelOpen(true);
+        setError(data.error === 'invalid_cron' ? t('tasks.invalidCron') : t('tasks.saveError'));
+        return false;
+      }
+      setTasks((prev) => [data.task as Task, ...prev]);
+      return true;
+    } catch {
+      setError(t('tasks.saveError'));
+      return false;
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const toggleTaskActive = (id: string) => {
-    setTasks(tasks.map(task =>
-      task.id === id ? { ...task, active: !task.active } : task
-    ));
+  const handleCreateTask = async () => {
+    if (!newTask.name || !newTask.cron || !newTask.prompt) return;
+    if (await createTask(newTask)) {
+      setIsDialogOpen(false);
+      setNewTask({ name: '', cron: '', module: ProjectType.DOCUMENT, prompt: '' });
+    }
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const addTemplate = async (template: (typeof TASK_TEMPLATES)[number]) => {
+    if (!signedIn) {
+      setRightPanelOpen(true);
+      return;
+    }
+    await createTask({
+      name: t(`taskTemplates.${template.key}Name`),
+      prompt: t(`taskTemplates.${template.key}Prompt`),
+      cron: template.cron,
+      module: template.module,
+    });
+  };
+
+  const toggleTaskActive = async (id: string) => {
+    const task = tasks.find((x) => x.id === id);
+    if (!task) return;
+    setError(null);
+    const res = await fetch(`/api/tasks/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: !task.active }),
+    }).catch(() => null);
+    if (!res?.ok) {
+      setError(t('tasks.saveError'));
+      return;
+    }
+    const data = await res.json();
+    setTasks((prev) => prev.map((x) => (x.id === id ? (data.task as Task) : x)));
+  };
+
+  const deleteTask = async (id: string) => {
+    setError(null);
+    const res = await fetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' }).catch(() => null);
+    if (!res?.ok) {
+      setError(t('tasks.saveError'));
+      return;
+    }
+    setTasks((prev) => prev.filter((x) => x.id !== id));
   };
 
   return (
@@ -108,14 +190,56 @@ export default function ScheduledTasksPage() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('tasks.title')}</h1>
                 <p className="text-gray-600">{t('tasks.description')}</p>
               </div>
-              <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+              <Button
+                onClick={() => (signedIn ? setIsDialogOpen(true) : setRightPanelOpen(true))}
+                className="gap-2"
+              >
                 <Plus className="h-4 w-4" />
                 {t('tasks.new')}
               </Button>
             </div>
 
+            {!loading && (
+              <p role="status" className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                {signedIn ? t('tasks.runNote') : t('tasks.signInRequired')}
+              </p>
+            )}
+            {error && !isDialogOpen && (
+              <p role="alert" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
+
             {loading ? (
               <p className="text-gray-500">{t('dashboard.loading')}</p>
+            ) : tasks.length === 0 ? (
+              <div className="space-y-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('tasks.templatesTitle')}</h2>
+                  <p className="text-sm text-gray-500">
+                    {signedIn ? t('tasks.empty') + ' ' : ''}
+                    {t('tasks.templatesHint')}
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {TASK_TEMPLATES.map((template) => (
+                    <Card key={template.key} className="flex flex-col gap-3 p-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-semibold text-gray-900">{t(`taskTemplates.${template.key}Name`)}</h3>
+                        <Badge variant="secondary">{t(`modules.${template.module}`)}</Badge>
+                      </div>
+                      <p className="text-sm text-gray-600">{t(`taskTemplates.${template.key}Prompt`)}</p>
+                      <div className="mt-auto flex items-center justify-between gap-2">
+                        <code className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">{template.cron}</code>
+                        <Button size="sm" className="gap-1" disabled={saving} onClick={() => addTemplate(template)}>
+                          <Plus className="h-3 w-3" />
+                          {t('tasks.addTemplate')}
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="grid gap-4">
                 {tasks.map((task) => (
@@ -136,7 +260,7 @@ export default function ScheduledTasksPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
-                            <span>{t('tasks.module')}: {task.module}</span>
+                            <span>{t('tasks.module')}: {t(`modules.${task.module}`)}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
@@ -162,7 +286,8 @@ export default function ScheduledTasksPage() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => deleteTask(task.id)}
+                          aria-label={t('tasks.delete')}
+                          onClick={() => setPendingDelete(task)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -203,17 +328,17 @@ export default function ScheduledTasksPage() {
             </div>
             <div>
               <Label htmlFor="module">{t('tasks.module')}</Label>
-              <Select value={newTask.module} onValueChange={(value) => setNewTask({ ...newTask, module: value as ProjectType })}>
+              <Select items={moduleItems} value={newTask.module} onValueChange={(value) => setNewTask({ ...newTask, module: value as ProjectType })}>
                 <SelectTrigger id="module">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ProjectType.SLIDES}>{t('quickActions.slides')}</SelectItem>
-                  <SelectItem value={ProjectType.DOCUMENT}>{t('quickActions.documents')}</SelectItem>
-                  <SelectItem value={ProjectType.IMAGE}>{t('quickActions.images')}</SelectItem>
-                  <SelectItem value={ProjectType.SHEET}>{t('quickActions.sheets')}</SelectItem>
-                  <SelectItem value={ProjectType.WEBSITE}>{t('quickActions.websites')}</SelectItem>
-                  <SelectItem value={ProjectType.VIDEO}>{t('quickActions.videos')}</SelectItem>
+                  <SelectItem value={ProjectType.SLIDES}>{t('modules.SLIDES')}</SelectItem>
+                  <SelectItem value={ProjectType.DOCUMENT}>{t('modules.DOCUMENT')}</SelectItem>
+                  <SelectItem value={ProjectType.IMAGE}>{t('modules.IMAGE')}</SelectItem>
+                  <SelectItem value={ProjectType.SHEET}>{t('modules.SHEET')}</SelectItem>
+                  <SelectItem value={ProjectType.WEBSITE}>{t('modules.WEBSITE')}</SelectItem>
+                  <SelectItem value={ProjectType.VIDEO}>{t('modules.VIDEO')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -227,9 +352,37 @@ export default function ScheduledTasksPage() {
               />
             </div>
           </div>
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t('tasks.cancel')}</Button>
-            <Button onClick={handleCreateTask}>{t('tasks.create')}</Button>
+            <Button onClick={handleCreateTask} disabled={saving}>{t('tasks.create')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={pendingDelete !== null} onOpenChange={(open) => !open && setPendingDelete(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('tasks.deleteTitle')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            {t('tasks.deleteDescription', { name: pendingDelete?.name ?? '' })}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingDelete(null)}>{t('tasks.cancel')}</Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (pendingDelete) await deleteTask(pendingDelete.id);
+                setPendingDelete(null);
+              }}
+            >
+              {t('tasks.delete')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

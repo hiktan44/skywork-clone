@@ -35,6 +35,44 @@
 - Canlıya almadan önce Coolify'da `BETTER_AUTH_SECRET` ve `BETTER_AUTH_URL` girilmeli (Coolify MCP 401, ajan giremiyor). Google/GitHub isteğe bağlı.
 - `src/lib/db.ts`: başka bir ajanın bıraktığı, izlenmeyen ve kullanılmayan dosya; dokunulmadı, commit'e alınmayacak.
 
+## 6 Kasım 2026 — Google girişi, Gemini chat, kalıcı görevler (commit'lenmedi)
+
+- Kullanıcı isteği: Google girişi + kalan eksikler. `better-auth-best-practices` skill'i uygulandı.
+- Google: `GOOGLE_CLIENT_ID/SECRET` varsa aktif; scope `openid email profile`, `prompt=select_account`,
+  PKCE; callback `/api/auth/callback/google`. Hesap bağlama: trustedProviders=google,
+  `requireLocalEmailVerified: true` (pre-hijack koruması). `ipAddressHeaders: x-forwarded-for`.
+- gcloud ile OAuth istemcisi oluşturulamadı: yerel gcloud token'ı süresi dolmuş (`invalid_grant`),
+  ayrıca standart Web OAuth istemcisi/onay ekranı gcloud ile oluşturulamıyor → README'de adım adım talimat.
+- Google logosu SVG (`src/components/icons/ProviderIcons.tsx`); giriş hataları `authErrors.*` ile Türkçe;
+  OAuth `?error=` panelde gösterilip URL'den temizleniyor (kod store'da).
+- Chat: `/api/chat` (AI SDK 7 + `@ai-sdk/google`, `gemini-flash-latest`, `GEMINI_MODEL` ile değişir).
+  Anahtar yalnız `GOOGLE_GENERATIVE_AI_API_KEY` env'den. Giriş şartı, 20 istek/10 dk/kullanıcı,
+  4000 karakter, son 12 mesaj, `X-Accel-Buffering: no`. Anahtar yoksa GET enabled:false → demo uyarısı.
+- Görevler: `/api/tasks` GET/POST, `/api/tasks/[id]` PATCH/DELETE; kullanıcıya özel, cron/modül doğrulamalı.
+  Anonim GET `{tasks:[], signedIn:false}`. Otomatik çalıştırıcı yok (UI'da belirtiliyor).
+- Duyuru penceresi dar ekranda kenar boşluklu, tek sütun.
+- `npm audit`: `npm audit fix` + `next`/`eslint-config-next` 16.2.6→16.4.5 (aynı major). 33→13 bulgu,
+  kritik/yüksek 0. Kalan 13 (2 düşük, 11 orta) dev araçları/`shadcn` CLI; düzeltmeleri semver-major.
+- Yerel doğrulama: migration 2x; görev CRUD + kullanıcılar arası izolasyon (404); chat 401/400/429,
+  akış başlıkları; Google yönlendirme URL'si; tarayıcıda 607px: Google logosu, TR hata mesajları,
+  görev kalıcılığı, modal kenar boşluğu. Gerçek Gemini yanıtı test edilmedi (anahtar yok).
+
+## 6 Kasım 2026 — içerik doldurma + P3 (commit'lenmedi, tek push'a girecek)
+
+- Kullanıcı kararı: önce içerik, sonra tek commit/push; P3'ler bu tura eklendi.
+- migrate.mjs: +12 proje (`showcase-*`, her türden 2; toplam 18, her tür 3) ve +6 beceri (`skill-*`; toplam 12),
+  `ON CONFLICT ("id") DO NOTHING`. Boş DB ve HEAD şemasından yükseltme ikişer kez doğrulandı (18/12).
+- Kapaklar: `public/covers/{tür}-{1,2}.svg` (özgün, /tmp'deki üreticiyle çizildi). `src/lib/covers.ts` yalnız
+  `/covers/*.svg` kabul eder, yoksa türe göre deterministik kapak. Şema genişletilmedi (beğeni alanı yok).
+- ProjectGrid: kapak + başlık + istem + Türkçe tür; tıklayınca istem sohbete yazılır (`chatDraft` store'da).
+- Vitrin artık `/api/projects` kullanıyor (mock-data hiçbir sayfada kullanılmıyor).
+- Beceriler: Türkçe modül rozetleri; "Şablonu kullan" → `defaultParams.examplePrompt` (yoksa ad) sohbete.
+- /scheduled: liste boşken 5 Türkçe şablon (girişsizse panel açılır); silme onay penceresi; modül adları
+  `modules.*` ile Türkçe (Base UI Select'e `items` verildi).
+- /api/chat: hız sınırı sayacı artık doğrulamadan sonra (25 hatalı istek hak tüketmedi, 21. geçerli 429).
+- Gotcha: `public/sw.js` CSS/JS için cache-first; yerel `next dev`'de sabit chunk adları yüzünden eski CSS
+  görünebilir (tarayıcıda SW'yi kaldırın). Production'da dosya adları hash'li olduğundan sorun değil.
+
 ## Doğrulama
 
 - `npm run build`: geçti.

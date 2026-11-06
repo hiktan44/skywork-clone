@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useEffect, useState } from 'react';
 import { Sparkles, Tag } from 'lucide-react';
 import { useUIStore } from '@/lib/store';
@@ -28,10 +30,19 @@ interface Skill {
   description: string;
   module: string;
   tags?: string[];
+  defaultParams?: { examplePrompt?: unknown } | null;
 }
 
 export default function SkillsPage() {
-  const { sidebarOpen, rightPanelOpen } = useUIStore();
+  const { sidebarOpen, rightPanelOpen, setChatDraft } = useUIStore();
+  const router = useRouter();
+
+  // Prefill the home chat with the skill's example prompt (or its name as a starter).
+  const applySkill = (skill: Skill) => {
+    const example = skill.defaultParams?.examplePrompt;
+    setChatDraft(typeof example === 'string' && example ? example : `${skill.name}: `);
+    router.push('/');
+  };
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useT();
@@ -84,7 +95,7 @@ export default function SkillsPage() {
                         <div>
                           <h3 className="font-semibold text-gray-900">{skill.name}</h3>
                           <Badge variant="outline" className="text-xs mt-1">
-                            {skill.module}
+                            {t(`modules.${skill.module}`)}
                           </Badge>
                         </div>
                       </div>
@@ -92,6 +103,7 @@ export default function SkillsPage() {
 
                     <p className="text-gray-600 text-sm mb-4">{skill.description}</p>
 
+                    {(skill.tags?.length ?? 0) > 0 && (
                     <div className="flex items-start gap-2 mb-4">
                       <Tag className="h-4 w-4 text-gray-400 mt-0.5" />
                       <div className="flex flex-wrap gap-2">
@@ -102,8 +114,9 @@ export default function SkillsPage() {
                         ))}
                       </div>
                     </div>
+                    )}
 
-                    <Button className="w-full">
+                    <Button className="w-full" onClick={() => applySkill(skill)}>
                       {t('skills.useTemplate')}
                     </Button>
                   </Card>
