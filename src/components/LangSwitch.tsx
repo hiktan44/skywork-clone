@@ -1,15 +1,19 @@
 'use client';
 
 import { useLang, setLang } from '@/lib/use-lang';
+import { useT } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Languages } from 'lucide-react';
 
 export default function LangSwitch() {
   const [lang] = useLang();
+  const t = useT();
 
   const toggleLang = () => {
     setLang(lang === 'tr' ? 'en' : 'tr');
   };
+
+  const label = lang === 'tr' ? t('lang.switchToEnglish') : t('lang.switchToTurkish');
 
   return (
     <Button
@@ -17,12 +21,10 @@ export default function LangSwitch() {
       size="icon"
       onClick={toggleLang}
       className="h-9 w-9"
-      title={lang === 'tr' ? 'Switch to English' : 'Türkçe\'ye geç'}
+      title={label}
     >
       <Languages className="h-5 w-5" />
-      <span className="sr-only">
-        {lang === 'tr' ? 'Switch to English' : 'Türkçe\'ye geç'}
-      </span>
+      <span className="sr-only">{label}</span>
     </Button>
   );
 }
