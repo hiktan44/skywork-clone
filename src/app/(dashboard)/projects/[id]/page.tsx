@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ImageViewer, SheetViewer, SlidesViewer, StoryboardViewer, WebsitePreview } from '@/components/projects/Viewers';
 import { useT } from '@/lib/i18n';
+import { useLang } from '@/lib/use-lang';
 import { useUIStore } from '@/lib/store';
 import { authClient } from '@/lib/auth-client';
 import type { ProjectContent } from '@/lib/generation/schemas';
@@ -38,6 +39,7 @@ const DOWNLOADS: Record<ProjectContent['module'], { format: string; label: strin
 
 export default function ProjectDetailPage() {
   const t = useT();
+  const [lang] = useLang();
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const { setRightPanelOpen } = useUIStore();
@@ -110,7 +112,7 @@ export default function ProjectDetailPage() {
                 DOWNLOADS[content.module].map((d) => (
                   <a
                     key={d.format}
-                    href={`/api/my-projects/${encodeURIComponent(project.id)}/download?format=${d.format}`}
+                    href={`/api/my-projects/${encodeURIComponent(project.id)}/download?format=${d.format}&lang=${lang}`}
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-gray-900 px-3 text-sm font-medium text-white hover:bg-gray-800"
                   >
                     <Download className="h-4 w-4" />

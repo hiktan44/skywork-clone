@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Markdown from '@/components/Markdown';
-import { useT } from '@/lib/i18n';
+import { useT, localeOf } from '@/lib/i18n';
+import { useLang } from '@/lib/use-lang';
 import type {
   ImageContent,
   SheetContent,
@@ -90,6 +91,7 @@ export function SlidesViewer({ content }: { content: SlidesContent }) {
 }
 
 export function SheetViewer({ content }: { content: SheetContent }) {
+  const [lang] = useLang();
   return (
     <div className="space-y-2">
       <div className="overflow-x-auto rounded-lg border">
@@ -111,7 +113,7 @@ export function SheetViewer({ content }: { content: SheetContent }) {
                     key={ci}
                     className={`border-t px-3 py-1.5 ${typeof row[ci] === 'number' ? 'text-right tabular-nums' : ''}`}
                   >
-                    {typeof row[ci] === 'number' ? (row[ci] as number).toLocaleString('tr-TR') : (row[ci] ?? '')}
+                    {typeof row[ci] === 'number' ? (row[ci] as number).toLocaleString(localeOf(lang)) : (row[ci] ?? '')}
                   </td>
                 ))}
               </tr>
@@ -146,7 +148,7 @@ export function StoryboardViewer({ content }: { content: StoryboardContent }) {
   return (
     <div className="space-y-3">
       <p role="note" className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
-        {t('projects.storyboardNotice')} · {content.durationSec} sn
+        {t('projects.storyboardNotice')} · {content.durationSec} {t('common.seconds')}
       </p>
       {content.summary && <Markdown>{content.summary}</Markdown>}
       <div className="overflow-x-auto rounded-lg border">
