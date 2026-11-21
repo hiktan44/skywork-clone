@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../_components/LegalPage";
+import { getServerLang } from "@/lib/server-lang";
+import { t } from "@/lib/i18n-core";
 
-export const metadata: Metadata = { title: "İletişim", alternates: { canonical: "/contact" } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: t("legal.contactTitle", await getServerLang()), alternates: { canonical: "/contact" } };
+}
 
-export default function Page() { return <LegalPage title="İletişim"><p>Hesap, teknik destek, ödeme veya kişisel veri talepleriniz için <a className="text-sky-300 underline" href="mailto:info@stratejidanismanlik.com.tr">info@stratejidanismanlik.com.tr</a> adresine yazabilirsiniz.</p></LegalPage>; }
+export default function Page() { return <LegalPage slug="contact" />; }
