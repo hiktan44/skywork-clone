@@ -101,6 +101,25 @@
 - Gotcha: `public/sw.js` CSS/JS için cache-first; yerel `next dev`'de sabit chunk adları yüzünden eski CSS
   görünebilir (tarayıcıda SW'yi kaldırın). Production'da dosya adları hash'li olduğundan sorun değil.
 
+## 21 Kasım 2026 — Tam İngilizce çeviri (PR bekliyor)
+
+- Sorun: dil anahtarı ve sözlük vardı ama bazı metinler (yasal sayfalar, alt bilgi, meta başlık/açıklama, tarih/sayı biçimi,
+  "sn", dönen demo proje/beceri içeriği) koda Türkçe gömülüydü; İngilizce seçilince Türkçe kalıyordu.
+- Yapılan: `src/lib/i18n-core.ts` (sözlük + `t`, sunucudan da kullanılabilir; `i18n.ts` yalnız `useT`), yeni anahtarlar
+  `meta.*`, `legal.*`, `lang.*`, `chat.stop`, `common.seconds`. Yasal sayfalar (`/privacy|terms|cookies|contact`) ve alt bilgi
+  istemci bileşeni oldu (`LegalPage slug=...`, `LegalFooter`). `<title>`/description/OG `generateMetadata` ile `ui_lang`
+  çerezinden, yoksa `Accept-Language`'den (`src/lib/server-lang.ts`); `LanguageProvider` dil değişince sekme başlığını,
+  `<html lang>`'i ve çerezi günceller. Bu yüzden sayfalar artık dinamik (`ƒ`) render ediliyor.
+- Dil algılama (`src/lib/use-lang.ts`, `useSyncExternalStore`): 1) localStorage `ui_lang` 2) ipwho.is `country_code`
+  (TR→tr, diğer→en; ipapi.co kaldırıldı) 3) arama başarısızsa tarayıcı dili (tr→tr, diğer→en). Algılanan dil localStorage'a
+  YAZILMAZ (yalnız elle seçim yazar); sonuç `ui_lang_change` olayıyla tüm hook'lara yayılır. SSR ve ilk istemci render'ı `tr`.
+- Demo veriler: DB'deki tohum satırları Türkçe kalır; `src/lib/seed-content.ts` yalnızca bilinen tohum id'leri için İngilizce
+  görünüm katmanı sağlar (kullanıcı verisine dokunmaz). Yeni tohum eklenirse oraya da eklenmeli.
+- AI: `lang=en` gönderilirse `/api/chat` ve `/api/generate` sistem isteminin sonuna İngilizce yanıt yönergesi eklenir (Türkçe
+  istem aynen). `/download?lang=en` storyboard .docx başlıklarını İngilizce yazar.
+- Bilerek Türkçe bırakıldı: model istemleri/şema `.describe`, `ai-mock.ts`, log, kod yorumları, DB içeriği, `public/llms.txt`,
+  manifest `lang`, firma unvanı/adresi (özel ad).
+
 ## Doğrulama
 
 - `npm run build`: geçti.
