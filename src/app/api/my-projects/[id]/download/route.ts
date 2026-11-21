@@ -44,7 +44,9 @@ export async function GET(request: Request, ctx: Ctx) {
   const content = project.content;
   if (!content) return NextResponse.json({ error: 'no_content' }, { status: 404 });
 
-  const format = new URL(request.url).searchParams.get('format');
+  const params = new URL(request.url).searchParams;
+  const format = params.get('format');
+  const lang = params.get('lang') === 'en' ? 'en' : 'tr';
   const base = safeName(project.title);
   const name = (ext: string) => [`${base}.${ext}`, `${project.title}.${ext}`] as const;
 
@@ -64,7 +66,7 @@ export async function GET(request: Request, ctx: Ctx) {
       if (format === 'html') return fileResponse(content.html, MIME.html, ...name('html'));
       break;
     case 'VIDEO':
-      if (format === 'docx') return fileResponse(await buildStoryboardDocx(content), MIME.docx, ...name('docx'));
+      if (format === 'docx') return fileResponse(await buildStoryboardDocx(content, lang), MIME.docx, ...name('docx'));
       break;
     case 'IMAGE':
       if (format === 'image') {

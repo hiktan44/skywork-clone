@@ -20,6 +20,10 @@ const SYSTEM_PROMPT =
   'bir sunum, belge, tablo, web sitesi veya görsel isterse, sohbet kutusundaki "Araçları Bağla" menüsünden ' +
   'ilgili aracı seçebileceğini kısaca hatırlat ve yine de içeriği eksiksiz yaz.';
 
+// Added only when the interface is in English: the prompt above defaults to Turkish.
+const ENGLISH_DIRECTIVE =
+  ' The user interface language is English: reply in English unless the user writes in or asks for another language.';
+
 function chatEnabled(): boolean {
   return isAiEnabled();
 }
@@ -61,6 +65,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
   }
+  const lang = (body as { lang?: unknown } | null)?.lang === 'en' ? 'en' : 'tr';
   const messages = parseMessages(body);
   if (!messages) {
     return NextResponse.json({ error: 'invalid_request' }, { status: 400 });
@@ -77,7 +82,7 @@ export async function POST(request: Request) {
 
   const result = streamText({
     model: await getTextModel('CHAT'),
-    system: SYSTEM_PROMPT,
+    system: lang === 'en' ? SYSTEM_PROMPT + ENGLISH_DIRECTIVE : SYSTEM_PROMPT,
     messages,
     maxOutputTokens: 8192,
     abortSignal: request.signal,

@@ -7,6 +7,8 @@ import { Presentation, FileText, Image as ImageIcon, Table, Globe, Video, Folder
 import { useT } from '@/lib/i18n';
 import { useUIStore } from '@/lib/store';
 import { coverFor } from '@/lib/covers';
+import { useLang } from '@/lib/use-lang';
+import { localizeProject } from '@/lib/seed-content';
 
 interface ProjectGridProps {
   projects: Project[];
@@ -32,6 +34,7 @@ const moduleColor: Record<string, string> = {
 
 export default function ProjectGrid({ projects }: ProjectGridProps) {
   const t = useT();
+  const [lang] = useLang();
   const router = useRouter();
   const pathname = usePathname();
   const { setChatDraft } = useUIStore();
@@ -57,7 +60,8 @@ export default function ProjectGrid({ projects }: ProjectGridProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-      {projects.map((project, index) => {
+      {projects.map((original, index) => {
+        const project = localizeProject(original, lang);
         const Icon = iconMap[project.type] || Folder;
         return (
           <button

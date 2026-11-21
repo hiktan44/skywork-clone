@@ -158,14 +158,15 @@ export async function buildDocx(title: string, markdown: string): Promise<Buffer
   return packDocx(title, children);
 }
 
-export async function buildStoryboardDocx(content: StoryboardContent): Promise<Buffer> {
-  const header = ['Zaman', 'Görüntü', 'Seslendirme', 'Ekran yazısı'];
+export async function buildStoryboardDocx(content: StoryboardContent, lang: 'tr' | 'en' = 'tr'): Promise<Buffer> {
+  const en = lang === 'en';
+  const header = en ? ['Time', 'Visual', 'Voice-over', 'On-screen text'] : ['Zaman', 'Görüntü', 'Seslendirme', 'Ekran yazısı'];
   const rows = [header, ...content.scenes.map((s) => [s.time, s.visual, s.voiceover, s.onScreenText])];
   return packDocx(content.title, [
     new Paragraph({ heading: HeadingLevel.TITLE, children: [new TextRun(content.title)] }),
     new Paragraph({
       alignment: AlignmentType.LEFT,
-      children: [new TextRun({ text: `Storyboard · ${content.durationSec} sn · video dosyası değildir`, italics: true })],
+      children: [new TextRun({ text: en ? `Storyboard · ${content.durationSec} sec · not a video file` : `Storyboard · ${content.durationSec} sn · video dosyası değildir`, italics: true })],
     }),
     new Paragraph({ children: inlineRuns(content.summary), spacing: { after: 200 } }),
     makeTable(rows),

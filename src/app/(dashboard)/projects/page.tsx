@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import AppShell from '@/components/layout/AppShell';
-import { useT } from '@/lib/i18n';
+import { useT, localeOf } from '@/lib/i18n';
+import { useLang } from '@/lib/use-lang';
 import { useUIStore } from '@/lib/store';
 import { authClient } from '@/lib/auth-client';
 import { coverFor } from '@/lib/covers';
@@ -19,6 +20,7 @@ interface MyProject {
 
 export default function MyProjectsPage() {
   const t = useT();
+  const [lang] = useLang();
   const { setRightPanelOpen } = useUIStore();
   const { data: session, isPending } = authClient.useSession();
   const [projects, setProjects] = useState<MyProject[]>([]);
@@ -84,7 +86,7 @@ export default function MyProjectsPage() {
                 <h3 className="truncate text-xs font-semibold text-gray-900">{p.title}</h3>
                 <p className="line-clamp-2 text-[11px] text-gray-500">{p.prompt}</p>
                 <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">
-                  {t(`modules.${p.type}`)} · {new Date(p.createdAt).toLocaleDateString('tr-TR')}
+                  {t(`modules.${p.type}`)} · {new Date(p.createdAt).toLocaleDateString(localeOf(lang))}
                 </span>
               </div>
             </Link>

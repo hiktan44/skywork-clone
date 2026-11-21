@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import Markdown from '@/components/Markdown';
 import { useT } from '@/lib/i18n';
 import { useUIStore } from '@/lib/store';
+import { useLang } from '@/lib/use-lang';
 import { authClient } from '@/lib/auth-client';
 import { GENERATION_MODULES, type GenerationModule } from '@/lib/generation/schemas';
 
@@ -63,6 +64,7 @@ export default function ChatInput() {
   // Synchronous guard: state updates are async, so two clicks in one tick could both pass `busy`.
   const sendingRef = useRef(false);
   const t = useT();
+  const [lang] = useLang();
   const router = useRouter();
   // Draft and selected tool live in the store so cards, quick actions and skills can set them.
   const {
@@ -106,7 +108,7 @@ export default function ChatInput() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ module, prompt: text }),
+        body: JSON.stringify({ module, prompt: text, lang }),
         signal: controller.signal,
       });
       const data = await res.json().catch(() => ({}));
@@ -140,7 +142,7 @@ export default function ChatInput() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history }),
+        body: JSON.stringify({ messages: history, lang }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
@@ -362,7 +364,7 @@ export default function ChatInput() {
             <Button
               type="button"
               size="sm"
-              aria-label="Stop"
+              aria-label={t('chat.stop')}
               onClick={() => abortRef.current?.abort()}
               className="h-7 bg-gray-900 hover:bg-gray-800 text-white"
             >

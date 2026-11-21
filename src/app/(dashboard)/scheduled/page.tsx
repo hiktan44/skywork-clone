@@ -5,7 +5,8 @@ import { Plus, Play, Pause, Trash2, Clock, Calendar } from 'lucide-react';
 import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { ProjectType } from '@/lib/types';
-import { useT } from '@/lib/i18n';
+import { useT, localeOf } from '@/lib/i18n';
+import { useLang } from '@/lib/use-lang';
 import { authClient } from '@/lib/auth-client';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -65,6 +66,7 @@ export default function ScheduledTasksPage() {
     prompt: '',
   });
   const t = useT();
+  const [lang] = useLang();
 
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const [signedIn, setSignedIn] = useState(false);
@@ -269,7 +271,7 @@ export default function ScheduledTasksPage() {
                           {task.nextRun && (
                             <div className="flex items-center gap-2">
                               <Clock className="h-4 w-4" />
-                              <span>{t('tasks.nextRun')}: {new Date(task.nextRun).toLocaleString('tr-TR')}</span>
+                              <span>{t('tasks.nextRun')}: {new Date(task.nextRun).toLocaleString(localeOf(lang))}</span>
                             </div>
                           )}
                         </div>

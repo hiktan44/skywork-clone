@@ -9,6 +9,8 @@ import { useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { ProjectType } from '@/lib/types';
 import { useT } from '@/lib/i18n';
+import { useLang } from '@/lib/use-lang';
+import { localizeSkill } from '@/lib/seed-content';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import RightPanel from '@/components/layout/RightPanel';
@@ -49,6 +51,7 @@ export default function SkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useT();
+  const [lang] = useLang();
 
   useEffect(() => {
     async function fetchSkills() {
@@ -88,7 +91,9 @@ export default function SkillsPage() {
               <p className="text-gray-500">{t('dashboard.loading')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {skills.map((skill) => (
+                {skills.map((original) => {
+                  const skill = localizeSkill(original, lang);
+                  return (
                   <Card key={skill.id} className="p-6 hover:shadow-lg transition-shadow cursor-pointer">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
@@ -123,7 +128,8 @@ export default function SkillsPage() {
                       {t('skills.useTemplate')}
                     </Button>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

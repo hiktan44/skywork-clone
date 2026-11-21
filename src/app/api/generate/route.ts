@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   } catch {
     return fail('invalid_request', 400);
   }
-  const { module, prompt } = (body ?? {}) as { module?: unknown; prompt?: unknown };
+  const { module, prompt, lang } = (body ?? {}) as { module?: unknown; prompt?: unknown; lang?: unknown };
   if (!isGenerationModule(module)) return fail('invalid_module', 400);
   if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > MAX_PROMPT) return fail('invalid_prompt', 400);
 
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   if (!limit.ok) return fail('rate_limited', 429, { 'Retry-After': String(limit.retryAfterSec) });
 
   try {
-    const artifact = await generateArtifact(module, prompt.trim(), request.signal);
+    const artifact = await generateArtifact(module, prompt.trim(), request.signal, lang === 'en' ? 'en' : 'tr');
     const id = randomUUID();
     const result = await pool.query(
       `INSERT INTO "Project" ("id", "userId", "title", "type", "prompt", "isPublic", "content")

@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../_components/LegalPage";
+import { getServerLang } from "@/lib/server-lang";
+import { t } from "@/lib/i18n-core";
 
-export const metadata: Metadata = { title: "Gizlilik ve KVKK Aydınlatma Metni", alternates: { canonical: "/privacy" } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: t("legal.privacyTitle", await getServerLang()), alternates: { canonical: "/privacy" } };
+}
 
-export default function Page() { return <LegalPage title="Gizlilik ve KVKK Aydınlatma Metni"><p>Hesap, iletişim, işlem ve güvenlik kayıtları; hizmeti sunmak, güvenliği sağlamak, destek taleplerini yanıtlamak ve hukuki yükümlülükleri yerine getirmek amacıyla işlenir.</p><p>Veriler sözleşmenin kurulması veya ifası, hukuki yükümlülük ve meşru menfaat sebeplerine dayanılarak; yalnız hizmet için zorunlu altyapı sağlayıcıları ve yetkili kurumlarla amaçla sınırlı paylaşılabilir.</p><p>KVKK kapsamındaki erişim, düzeltme, silme ve itiraz taleplerinizi <a className="text-sky-300 underline" href="mailto:info@stratejidanismanlik.com.tr">info@stratejidanismanlik.com.tr</a> adresine iletebilirsiniz.</p></LegalPage>; }
+export default function Page() { return <LegalPage slug="privacy" />; }

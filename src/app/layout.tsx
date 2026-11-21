@@ -3,38 +3,45 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import LegalFooter from "@/components/LegalFooter";
+import { getServerLang } from "@/lib/server-lang";
+import { t } from "@/lib/i18n-core";
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  manifest: '/manifest.webmanifest',
-  appleWebApp: { capable: true, title: 'Skywork', statusBarStyle: 'default' },
-  metadataBase: new URL("https://skywork.seymata.com"),
-  title: "Skywork — Yapay Zekâ Çalışma Alanı",
-  description: "Projeleri, görevleri ve içerik üretimini tek çalışma alanında yöneten yapay zekâ destekli platform.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Skywork — Yapay Zekâ Çalışma Alanı",
-    description: "Projeleri, görevleri ve içerik üretimini tek çalışma alanında yönetin.",
-    url: "https://skywork.seymata.com",
-    siteName: "Skywork",
-    locale: "tr_TR",
-    type: "website",
-  },
-  twitter: { card: "summary", title: "Skywork", description: "Yapay zekâ destekli çalışma alanı." },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getServerLang();
+  return {
+    manifest: '/manifest.webmanifest',
+    appleWebApp: { capable: true, title: 'Skywork', statusBarStyle: 'default' },
+    metadataBase: new URL("https://skywork.seymata.com"),
+    title: t('meta.title', lang),
+    description: t('meta.description', lang),
+    alternates: { canonical: "/" },
+    openGraph: {
+      title: t('meta.title', lang),
+      description: t('meta.ogDescription', lang),
+      url: "https://skywork.seymata.com",
+      siteName: "Skywork",
+      locale: lang === 'tr' ? "tr_TR" : "en_US",
+      type: "website",
+    },
+    twitter: { card: "summary", title: "Skywork", description: t('meta.twitterDescription', lang) },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await getServerLang();
   return (
     <html
-      lang="tr"
+      lang={lang}
       className={`${inter.variable} h-full antialiased`}
     >
       <head>
@@ -69,7 +76,5 @@ export default function RootLayout({
   );
 }
 
-
-function LegalFooter() { return <footer className="border-t border-slate-200 bg-white px-5 py-5 text-center text-sm text-slate-600"><div className="flex flex-wrap justify-center gap-4"><a href="/privacy">Gizlilik ve KVKK</a><a href="/terms">Kullanım Koşulları</a><a href="/cookies">Çerez Politikası</a><a href="/contact">İletişim</a></div><p className="mt-3">STRATEJİ DANIŞMANLIK HİZMETLERİ SAN. VE TİC. A.Ş. · <a href="mailto:info@stratejidanismanlik.com.tr">info@stratejidanismanlik.com.tr</a></p></footer>; }
 
 export const viewport = { themeColor: '#0369a1' };

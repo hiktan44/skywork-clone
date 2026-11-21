@@ -37,6 +37,13 @@ const INSTRUCTIONS: Record<Exclude<GenerationModule, 'IMAGE'>, string> = {
     'Zaman kodlu sahneler, görüntü/kamera tarifi, seslendirme metni ve ekran yazısı ver.',
 };
 
+// Added only when the interface is in English: the default instructions above ask for Turkish.
+const ENGLISH_DIRECTIVE =
+  ' The user interface language is English: write ALL content in English (titles, body text, notes, ' +
+  'column names), unless the user explicitly asks for another language. This overrides the default-language instruction above.';
+
+export type OutputLang = 'tr' | 'en';
+
 const SCHEMAS = {
   SLIDES: slidesSchema,
   DOCUMENT: documentSchema,
@@ -59,14 +66,15 @@ export interface GeneratedArtifact {
 export async function generateArtifact(
   module: GenerationModule,
   prompt: string,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
+  lang: OutputLang = 'tr'
 ): Promise<GeneratedArtifact> {
   if (module === 'IMAGE') return generateImageArtifact(prompt, abortSignal);
 
   const schema = SCHEMAS[module];
   const { output } = await generateText({
     model: await getTextModel(module),
-    system: INSTRUCTIONS[module],
+    system: lang === 'en' ? INSTRUCTIONS[module] + ENGLISH_DIRECTIVE : INSTRUCTIONS[module],
     prompt,
     output: Output.object({ schema }),
     maxOutputTokens: module === 'WEBSITE' || module === 'DOCUMENT' ? 16_000 : 8_000,
