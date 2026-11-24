@@ -71,6 +71,7 @@ export default async function RootLayout({
               : "if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});}",
         }}
       />
+        <script defer src="/site-visit-preference.js" data-site-origin="https://skywork.seymata.com" data-context="server" />
       </body>
     </html>
   );
