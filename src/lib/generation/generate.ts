@@ -1,5 +1,10 @@
-import { generateText, Output } from 'ai';
-import { getImageModel, getTextModel } from '@/lib/ai';
+import { APICallError, generateText, Output } from 'ai';
+import {
+  getGeminiThinkingOptions,
+  getImageModelCandidates,
+  getTextModelCandidates,
+  isImageModel,
+} from '@/lib/ai';
 import { sanitizeGeneratedHtml } from '@/lib/generation/sanitize-html';
 import {
   documentSchema,
@@ -63,6 +68,12 @@ export interface GeneratedArtifact {
   content: ProjectContent;
 }
 
+function isFallbackableApiError(error: unknown): boolean {
+  if (!APICallError.isInstance(error)) return false;
+  const code = error.statusCode;
+  return code === 400 || code === 403 || code === 404 || code === 429 || code === 503;
+}
+
 export async function generateArtifact(
   module: GenerationModule,
   prompt: string,
@@ -72,14 +83,36 @@ export async function generateArtifact(
   if (module === 'IMAGE') return generateImageArtifact(prompt, abortSignal);
 
   const schema = SCHEMAS[module];
-  const { output } = await generateText({
-    model: await getTextModel(module),
-    system: lang === 'en' ? INSTRUCTIONS[module] + ENGLISH_DIRECTIVE : INSTRUCTIONS[module],
-    prompt,
-    output: Output.object({ schema }),
-    maxOutputTokens: module === 'WEBSITE' || module === 'DOCUMENT' ? 16_000 : 8_000,
-    abortSignal,
-  });
+  const isDeepModule = module === 'SLIDES' || module === 'DOCUMENT' || module === 'WEBSITE';
+  const maxOutputTokens = isDeepModule ? 32_768 : 16_384;
+  const thinkingLevel = isDeepModule ? 'medium' : 'low';
+  const candidates = await getTextModelCandidates(module);
+
+  let output: unknown;
+  let lastError: unknown;
+  for (let i = 0; i < candidates.length; i++) {
+    const candidate = candidates[i];
+    try {
+      const res = await generateText({
+        model: candidate.model,
+        system: lang === 'en' ? INSTRUCTIONS[module] + ENGLISH_DIRECTIVE : INSTRUCTIONS[module],
+        prompt,
+        output: Output.object({ schema }),
+        maxOutputTokens,
+        providerOptions: getGeminiThinkingOptions(candidate.id, thinkingLevel),
+        abortSignal,
+      });
+      output = res.output;
+      lastError = undefined;
+      break;
+    } catch (err) {
+      lastError = err;
+      const hasNext = i < candidates.length - 1;
+      if (!hasNext || !isFallbackableApiError(err)) throw err;
+      console.warn(`[generate] ${candidate.id} failed for ${module}, falling back to ${candidates[i + 1].id}`);
+    }
+  }
+  if (lastError) throw lastError;
 
   // Output.object already validated against the schema; parse again so nothing unvalidated is stored.
   const parsed = schema.safeParse(output);
@@ -94,20 +127,45 @@ export async function generateArtifact(
 }
 
 async function generateImageArtifact(prompt: string, abortSignal?: AbortSignal): Promise<GeneratedArtifact> {
-  const result = await generateText({
-    model: await getImageModel(),
-    prompt: `${prompt}\n\nYüksek kaliteli, metin içermeyen tek bir görsel üret.`,
-    abortSignal,
-  });
-  const file = result.files.find((f) => f.mediaType?.startsWith('image/'));
-  if (!file) throw new GenerationError('image_unavailable');
+  const candidates = await getImageModelCandidates();
+  let lastError: unknown;
 
-  const parsed = imageContentSchema.safeParse({
-    mediaType: file.mediaType,
-    base64: file.base64,
-    caption: result.text.trim().slice(0, 2000),
-  });
-  if (!parsed.success) throw new GenerationError('invalid_output');
-  const title = prompt.trim().slice(0, 80) || 'Görsel';
-  return { title, content: { module: 'IMAGE', ...parsed.data } };
+  for (let i = 0; i < candidates.length; i++) {
+    const candidate = candidates[i];
+    const hasNext = i < candidates.length - 1;
+    try {
+      const result = await generateText({
+        model: candidate.model,
+        prompt: `${prompt}\n\nYüksek kaliteli, metin içermeyen tek bir görsel üret.`,
+        providerOptions: isImageModel(candidate.id)
+          ? { google: { responseModalities: ['TEXT', 'IMAGE'] } }
+          : undefined,
+        abortSignal,
+      });
+      const file = result.files.find((f) => f.mediaType?.startsWith('image/'));
+      if (!file) {
+        if (hasNext) {
+          console.warn(`[generate] ${candidate.id} returned no image, falling back to ${candidates[i + 1].id}`);
+          continue;
+        }
+        throw new GenerationError('image_unavailable');
+      }
+
+      const parsed = imageContentSchema.safeParse({
+        mediaType: file.mediaType,
+        base64: file.base64,
+        caption: result.text.trim().slice(0, 2000),
+      });
+      if (!parsed.success) throw new GenerationError('invalid_output');
+      const title = prompt.trim().slice(0, 80) || 'Görsel';
+      return { title, content: { module: 'IMAGE', ...parsed.data } };
+    } catch (err) {
+      lastError = err;
+      if (!hasNext || (err instanceof GenerationError && err.code !== 'image_unavailable')) throw err;
+      if (!isFallbackableApiError(err) && !(err instanceof GenerationError)) throw err;
+      console.warn(`[generate] ${candidate.id} image failed, falling back to ${candidates[i + 1].id}`);
+    }
+  }
+
+  throw lastError ?? new GenerationError('image_unavailable');
 }
