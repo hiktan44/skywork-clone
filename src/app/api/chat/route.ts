@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { streamText, type ModelMessage } from 'ai';
-import { getTextModel, isAiEnabled } from '@/lib/ai';
+import { getGeminiThinkingOptions, getTextModelCandidates, isAiEnabled } from '@/lib/ai';
 import { getSessionUser } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -80,11 +80,13 @@ export async function POST(request: Request) {
     );
   }
 
+  const [primary] = await getTextModelCandidates('CHAT');
   const result = streamText({
-    model: await getTextModel('CHAT'),
+    model: primary.model,
     system: lang === 'en' ? SYSTEM_PROMPT + ENGLISH_DIRECTIVE : SYSTEM_PROMPT,
     messages,
     maxOutputTokens: 8192,
+    providerOptions: getGeminiThinkingOptions(primary.id, 'low'),
     abortSignal: request.signal,
     onError: ({ error }) => {
       console.error('[chat] generation failed:', error instanceof Error ? error.message : error);

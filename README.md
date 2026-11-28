@@ -71,8 +71,9 @@ Ana sayfadaki SkyClaw sohbeti Vercel AI SDK + Google Gemini ile akışlı yanıt
 
 | Değişken | Zorunlu | Açıklama |
 |---|---|---|
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Sohbet için | Google AI Studio API anahtarı. Yoksa sohbet "demo" uyarısı gösterir. |
-| `GEMINI_MODEL` | Hayır | Varsayılan `gemini-flash-latest`. |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Sohbet için | Google AI Studio API anahtarı (`GEMINI_API_KEY` de desteklenir). Yoksa sohbet "demo" uyarısı gösterir. |
+| `GEMINI_MODEL` | Hayır | Varsayılan `gemini-4-hydrogen` (sohbet, tablo, storyboard ve Neon yedeği). |
+| `GEMINI_DEEP_MODEL` | Hayır | Varsayılan `gemini-4-neon` (sunum, belge, web sitesi; 403/429 hatasında otomatik `gemini-4-hydrogen` yedeğine düşer). |
 
 ## Araçlar: bitmiş dosya üretimi
 
@@ -82,12 +83,12 @@ beceri şablonları bir araç seçer; istek `/api/generate`'e gider, sonuç kull
 
 | Araç | Üretim | Görüntüleme | İndirme |
 |---|---|---|---|
-| Sunum | Gemini → zod doğrulamalı slayt JSON'u (8–12 slayt, konuşmacı notu) | Slayt gezgini | `.pptx` (pptxgenjs, MIT) |
-| Belge | Başlıklı Markdown | Güvenli Markdown | `.docx` (docx, MIT), `.md` |
-| Tablo | Sütun/satır JSON'u | Tablo | `.xlsx` (exceljs, MIT) |
-| Web sitesi | Tek dosya HTML+CSS; `<script>`/olay öznitelikleri temizlenir, CSP eklenir | `sandbox=""` iframe (betik kapalı) | `.html` |
-| Görsel | `gemini-3.1-flash-image-preview` (`GEMINI_IMAGE_MODEL` ile değişir) | Görsel | PNG/JPG |
-| Video | Sahne sahne **storyboard** (video dosyası değildir) | Sahne tablosu | `.docx` |
+| Sunum | Gemini 4 Neon (`gemini-4-neon`, yedek `gemini-4-hydrogen`) → zod doğrulamalı slayt JSON'u (8–12 slayt, konuşmacı notu) | Slayt gezgini | `.pptx` (pptxgenjs, MIT) |
+| Belge | Başlıklı Markdown (`gemini-4-neon`, yedek `gemini-4-hydrogen`) | Güvenli Markdown | `.docx` (docx, MIT), `.md` |
+| Tablo | Sütun/satır JSON'u (`gemini-4-hydrogen`) | Tablo | `.xlsx` (exceljs, MIT) |
+| Web sitesi | Tek dosya HTML+CSS (`gemini-4-neon`, yedek `gemini-4-hydrogen`); `<script>`/olay öznitelikleri temizlenir, CSP eklenir | `sandbox=""` iframe (betik kapalı) | `.html` |
+| Görsel | `gemini-nano-banana-2.1` (yedek `gemini-3-pro-image`, `GEMINI_IMAGE_MODEL` ile değişir) | Görsel | PNG/JPG |
+| Video | Sahne sahne **storyboard** (video dosyası değildir, `gemini-4-hydrogen`) | Sahne tablosu | `.docx` |
 
 Kurallar: giriş şartı; kullanıcı başına 10 dakikada 10 üretim (yalnızca doğrulanan istekler sayılır);
 model çıktısı kaydedilmeden ve dosyaya çevrilmeden önce zod ile doğrulanır; projeler yalnızca sahibine
@@ -98,7 +99,9 @@ sabit örnek çıktıyla çalıştırır. Yalnızca yerel/QA testinde kullanın,
 
 | Değişken | Açıklama |
 |---|---|
-| `GEMINI_IMAGE_MODEL` | Varsayılan `gemini-3.1-flash-image-preview` |
+| `GEMINI_MODEL` | Genel metin/sohbet modeli; varsayılan `gemini-4-hydrogen` |
+| `GEMINI_DEEP_MODEL` | Yoğun sentez (sunum/belge/web) modeli; varsayılan `gemini-4-neon` |
+| `GEMINI_IMAGE_MODEL` | Varsayılan `gemini-nano-banana-2.1` (yedek: `GEMINI_IMAGE_FALLBACK_MODEL=gemini-3-pro-image`) |
 | `SKYWORK_AI_MOCK` | Yalnız test: `1` ise mock modeller |
 
 ## Örnek içerik
